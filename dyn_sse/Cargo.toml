@@ -1,0 +1,10 @@
+[package]
+name = "dyn_sse"
+version = "0.1.0"
+authors = ["ccs2020"]
+edition = "2018"
+
+[dependencies]
+dyn_sse_lib = {path = "./dyn_sse_lib"}
+indexing = { path = "../indexing" }
+multimap = "0.8.1"

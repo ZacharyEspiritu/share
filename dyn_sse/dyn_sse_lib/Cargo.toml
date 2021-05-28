@@ -1,0 +1,11 @@
+[package]
+name = "dyn_sse_lib"
+version = "0.1.0"
+authors = ["ccs2020"]
+edition = "2018"
+
+[dependencies]
+arrayref = "0.3.5"
+ring = "0.17.0-alpha.1"
+multimap = "0.8.1"
+openssl = "0.10.21"
