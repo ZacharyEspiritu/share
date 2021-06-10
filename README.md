@@ -10,7 +10,7 @@ The following commands will download the `share` repository and attempt to build
 
 ```bash
 git clone https://github.com/ZacharyEspiritu/share.git
-cd share
+cd share/java
 mvn package
 ```
 
