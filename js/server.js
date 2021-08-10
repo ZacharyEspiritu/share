@@ -10,7 +10,6 @@ app.use(express.urlencoded({extended: true}));
 app.use(express.json()) // To parse the incoming requests with JSON payloads
 
 
-
 const server = app.listen(port, function () {
   console.log('Listening on port %d', server.address().port);
 });

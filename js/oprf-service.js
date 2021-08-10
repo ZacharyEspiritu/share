@@ -17,10 +17,9 @@ app.post('/oprf', async function(req,res) {
   var input = req.body.input;
  
   console.log("oprf: ", input)
-  // update database
 
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "X-Requested-With");
   console.log("Successful oprf")
-  res.status(200).send(JSON.stringify("Success"));
+  res.status(200).send(JSON.stringify("OPRF success"));
 });

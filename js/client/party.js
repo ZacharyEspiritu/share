@@ -22,3 +22,16 @@ function run() {
     });
     
 }
+
+function init() {
+  
+}
+
+function setup() {
+
+}
+
+
+function setupHT() {
+
+}
