@@ -11,6 +11,8 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.17.1",
+    "oprf": "^2.0.0",
+    "paillier-bigint": "^3.2.5",
     "path": "^0.12.7"
   }
 }
