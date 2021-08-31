@@ -31,7 +31,6 @@ import java.util.List;
  * {@link org.crypto.share.emm.DlsDEncryptedMultimap#query(SearchToken)} operation.
  */
 public class SearchToken {
-
     private @Nonnull final List<String> oldSubtokens;
     private @Nonnull final List<String> newSubtokens;
 
