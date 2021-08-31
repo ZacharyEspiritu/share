@@ -27,6 +27,7 @@ app.post('/postAnalystPublicKey', async function(req, res) {
   var analystId = req.body.analystId;
   analystPublicKeys[analystId] = analystPublicKey;
   console.log("Storing analyst public key: ", analystId, analystPublicKey);
+  res.status(200).send("Success: storing analyst public key");
 });
 
 app.post('/retrieveAnalystPublicKey', async function(req, res) {
@@ -36,7 +37,7 @@ app.post('/retrieveAnalystPublicKey', async function(req, res) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "X-Requested-With");
   console.log("Successful setup")
-  res.status(200).send(JSON.stringify(analystPublicKeys[analystId]));
+  res.status(200).send(analystPublicKeys[analystId]);
 
 });
 

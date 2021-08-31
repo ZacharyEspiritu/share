@@ -5,11 +5,7 @@ analystPublicKey = "dac56ba60fe8696b97d24a0b7a88f1bb";
 
 function run() {
     console.log("HELLOWORLD!")
-    init()
-    
-
-
-    
+    setup()
 }
 
 function init() {
@@ -44,7 +40,7 @@ function setup() {
     // console.log("Total time (ms): ", timeEnd - timeStart);
 });
 $.post('http://' + oprf_ip + '/oprf', {
-  "input": "input",
+  "input": "input,hello,a;sldkjfa;lksdjf",
 }, function(response) {
   console.log("OPRF response:", response);
   // const timeEnd = performance.now();
