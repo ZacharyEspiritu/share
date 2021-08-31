@@ -15,3 +15,11 @@ mvn package
 ```
 
 This should produce a `target/share-1.0-SNAPSHOT.jar` file in the repository. If this file exists, the build was successful.
+
+```
+nodemon server.js
+nodemon oprf-service.js
+node party-script.js ANALYST INIT
+node party-script.js DATAOWNER SETUP
+
+```
