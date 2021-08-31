@@ -63,7 +63,7 @@ public class Scenario
         BufferedReader keyRead = new BufferedReader(new InputStreamReader(System.in));
         System.out.println("Enter a seed for key generation:");
         final String password = keyRead.readLine();
-        final PrivateKey privateKey = generatePrivateKey(password);
+        final SharePrivateKey sharePrivateKey = generatePrivateKey(password);
 
         System.out.println("Enter number of concurrent DataOwners:");
         final int numOwners = Integer.parseInt(keyRead.readLine());
@@ -79,12 +79,12 @@ public class Scenario
         // Set up the parties:
         System.out.println("Initializing parties...");
         Server server = new Server(emm);
-        Analyst analyst = new Analyst(privateKey, server);
+        Analyst analyst = new Analyst(sharePrivateKey, server);
 
         // Set up variable number of DataOwners:
         List<DataOwner> dataOwners = new ArrayList<DataOwner>();
         for (int i = 0; i < numOwners; i++) {
-            dataOwners.add(new DataOwner(privateKey, server));
+            dataOwners.add(new DataOwner(sharePrivateKey, server));
         }
 
         // Start some threads for the owners to add data:
@@ -96,17 +96,20 @@ public class Scenario
             }
 
             ExecutorService service = Executors.newFixedThreadPool(threadCount);
-            for (final DataOwner dataOwner : dataOwners) {
+            for (int i = 0; i < dataOwners.size(); i++) {
+                final DataOwner dataOwner = dataOwners.get(i);
+                final int finalI = i;
                 Callable<Void> callable = new Callable<Void>() {
                     public Void call() throws Exception {
-                        System.out.println("  DataOwner: starting updates...");
+                        System.out.println("  DataOwner #" + finalI + ": starting updates...");
                         Multimap<String, String> map = ArrayListMultimap.create();
                         ArrayList<String> values = new ArrayList<>();
-                        values.add("rand1");
-                        values.add("rand2");
+                        values.add(finalI + "-testA");
+                        values.add(finalI + "-testB");
+                        values.add(finalI + "-testC");
                         map.putAll("data1", values);
                         dataOwner.updateServerWithMultimap(map);
-                        System.out.println("  DataOwner: done.");
+                        System.out.println("  DataOwner #" + finalI + ": done.");
                         return null;
                     }
                 };
@@ -116,14 +119,16 @@ public class Scenario
             shutdownAndAwaitTermination(service);
         } else {
             System.out.println("Having owners add data non-concurrently...");
-            for (final DataOwner dataOwner : dataOwners) {
+            for (int i = 0; i < dataOwners.size(); i++) {
+                final DataOwner dataOwner = dataOwners.get(i);
                 Multimap<String, String> map = ArrayListMultimap.create();
                 ArrayList<String> values = new ArrayList<>();
-                values.add("rand1");
-                values.add("rand2");
+                values.add(i + "-testA");
+                values.add(i + "-testB");
+                values.add(i + "-testC");
                 map.putAll("data1", values);
                 dataOwner.updateServerWithMultimap(map);
-                System.out.println("DataOwner: done.");
+                System.out.println("DataOwner #" + i + ": done.");
             }
         }
         System.out.println("DataOwner phase done.");
@@ -133,7 +138,7 @@ public class Scenario
         System.out.println(analyst.filter("data1"));
     }
 
-    private static PrivateKey generatePrivateKey(String password)
+    private static SharePrivateKey generatePrivateKey(String password)
             throws InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException {
         ImmutableMap.Builder<String, byte[]> immutableMap = ImmutableMap.<String, byte[]>builder();
         for (final String purpose : KEY_GEN_PURPOSES) {
@@ -142,7 +147,7 @@ public class Scenario
                                                                   KEY_GEN_KEY_SIZE));
         }
         ImmutableMap<String, byte[]> keys = immutableMap.build();
-        return new PrivateKey(keys.get(PURPOSE_COUNTER_KEY), keys.get(PURPOSE_LABEL_KEY),
+        return new SharePrivateKey(keys.get(PURPOSE_COUNTER_KEY), keys.get(PURPOSE_LABEL_KEY),
                                    keys.get(PURPOSE_VALUE_KEY));
     }
 

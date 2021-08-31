@@ -26,28 +26,25 @@ package org.crypto.share;
 import org.crypto.share.emm.DlsDEncryptedMultimap;
 import org.crypto.share.emm.SearchToken;
 import org.crypto.share.emm.VersionCounter;
+import org.crypto.share.util.RandomSet;
 import org.crypto.sse.CryptoPrimitives;
 
 import javax.annotation.Nonnull;
 import javax.crypto.NoSuchPaddingException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
+import java.security.*;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Analyst {
 
     private @Nonnull final Server server;
-    private @Nonnull final PrivateKey privateKey;
+    private @Nonnull final SharePrivateKey sharePrivateKey;
 
-    public Analyst(PrivateKey privateKey, Server server) {
+    public Analyst(final SharePrivateKey sharePrivateKey, final Server server) {
         this.server = server;
-        this.privateKey = privateKey;
+        this.sharePrivateKey = sharePrivateKey;
     }
 
     /**
@@ -61,28 +58,28 @@ public class Analyst {
                 server.getOldVersionCounterForLabel(plaintextLabel);
         final VersionCounter newVersionCounter =
                 server.getNewVersionCounterForLabel(plaintextLabel);
-        final SearchToken searchToken = generateSearchToken(privateKey.getLabelKey(),
-                                                            privateKey.getValueKey(),
+        final SearchToken searchToken = generateSearchToken(sharePrivateKey.getLabelKey(),
+                                                            sharePrivateKey.getValueKey(),
                                                             plaintextLabel,
                                                             oldVersionCounter,
                                                             newVersionCounter);
 
         final List<byte[]> ciphertextResults = server.filter(searchToken);
-        return resolveResults(privateKey.getValueKey(), ciphertextResults);
+        return resolveResults(sharePrivateKey.getValueKey(), ciphertextResults);
     }
 
-    private SearchToken generateSearchToken(byte[] labelKey, byte[] valueKey,
-                                                  String label,
-                                                  VersionCounter oldVersionCounter,
-                                                  VersionCounter newVersionCounter)
+    private SearchToken generateSearchToken(final byte[] labelKey, final byte[] valueKey,
+                                            final String label,
+                                            final VersionCounter oldVersionCounter,
+                                            final VersionCounter newVersionCounter)
             throws UnsupportedEncodingException {
         return new SearchToken(
                 generateSearchSubtokens(labelKey, label, oldVersionCounter),
                 generateSearchSubtokens(labelKey, label, newVersionCounter));
     }
 
-    private List<String> generateSearchSubtokens(byte[] labelKey, String label,
-                                             VersionCounter versionCounter)
+    private List<String> generateSearchSubtokens(final byte[] labelKey, final String label,
+                                                 final VersionCounter versionCounter)
             throws UnsupportedEncodingException {
         final int version = versionCounter.getVersion();
         final int counter = versionCounter.getCounter();
@@ -98,7 +95,8 @@ public class Analyst {
         return result;
     }
 
-    private static List<String> resolveResults(byte[] valueKey, List<byte[]> ciphertextResults)
+    private static List<String> resolveResults(final byte[] valueKey,
+                                               final List<byte[]> ciphertextResults)
             throws InvalidAlgorithmParameterException, NoSuchAlgorithmException,
                    NoSuchPaddingException, NoSuchProviderException, InvalidKeyException,
                    IOException {
@@ -120,11 +118,44 @@ public class Analyst {
         }
 
         for (String plaintext : suppress) {
-            if (result.contains(plaintext)) {
-                result.remove(plaintext);
-            }
+            result.remove(plaintext);
         }
 
         return result;
+    }
+
+    private RandomSet<String> allLabels = new RandomSet<>();        // L_mm
+    private RandomSet<String> searchedLabels = new RandomSet<>();   // S_e
+    private Set<String> stashOfSearchedLabels = new HashSet<>();    // L_sr  Multimap<String,
+    // byte[]>
+    private Set<String> stashOfUnsearchedLabels = new HashSet<>();  // L_un
+
+    private void rebuild(final byte[] labelKey, final byte[] valueKey, int deamortizationRate) {
+        // If we assume parameter = 0 because state_set_search.size() = 0, because searched set is
+        // 0.
+        final boolean randomBit = (sampleBernoulliDistribution() < 0);
+
+        if (!randomBit) {
+            if (stashOfSearchedLabels.size() < deamortizationRate) {
+                String randomLabel = searchedLabels.pollRandom(new SecureRandom());
+                VersionCounter versionCounter = server.getOldVersionCounterForLabel(randomLabel);
+            } else {
+                for (int i = 0; i < deamortizationRate; i++) {
+
+                }
+            }
+        } else {
+            int count = deamortizationRate;
+        }
+    }
+
+    private double sampleBernoulliDistribution() {
+        byte[] randomBytes = CryptoPrimitives.randomBytes(4);
+        return CryptoPrimitives.getLongFromByte(randomBytes, 32) / Math.pow(2, 31);
+    }
+
+    // from https://stackoverflow.com/a/51412979
+    static <E> E getRandomSetElement(Set<E> set) {
+        return set.stream().skip(new Random().nextInt(set.size())).findFirst().orElse(null);
     }
 }

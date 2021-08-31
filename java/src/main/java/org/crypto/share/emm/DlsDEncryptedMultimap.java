@@ -70,12 +70,13 @@ public class DlsDEncryptedMultimap {
              new ConcurrentHashMap<>());
     }
 
-    public DlsDEncryptedMultimap(final ConcurrentHashMap<String, byte[]> oldDictionary,
-                                 final ConcurrentHashMap<String, byte[]> newDictionary,
-                                 int currentGlobalVersion,
-                                 final Set<String> previouslySearchedLabels,
-                                 final ConcurrentHashMap<String, VersionCounter> oldVersionCounters,
-                                 final ConcurrentHashMap<String, VersionCounter> newVersionCounters) {
+    public DlsDEncryptedMultimap(
+            final ConcurrentHashMap<String, byte[]> oldDictionary,
+            final ConcurrentHashMap<String, byte[]> newDictionary,
+            int currentGlobalVersion,
+            final Set<String> previouslySearchedLabels,
+            final ConcurrentHashMap<String, VersionCounter> oldVersionCounters,
+            final ConcurrentHashMap<String, VersionCounter> newVersionCounters) {
         this.oldDictionary = oldDictionary;
         this.newDictionary = newDictionary;
         this.currentGlobalVersion = currentGlobalVersion;
