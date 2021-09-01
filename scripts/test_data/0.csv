@@ -1,10 +1,98 @@
-Jeffery,Cooper,15486 Christie Plaza Suite 356,1991-08-16,228,194
-Elizabeth,Wall,492 Brian Mountain Suite 541,1983-01-01,208,150
-Emily,Davis,77903 Oconnell Creek Suite 985,1958-05-19,222,154
-Christine,Sanchez,572 Clark Motorway,1974-10-17,193,160
-Dustin,Cox,0061 Ferguson Trace Apt. 901,1984-12-30,131,155
-Samantha,Moore,663 Kim Forges Suite 716,1995-04-26,189,152
-Tracy,Simpson,12424 Waters Mission Apt. 174,1961-05-08,288,171
-Tiffany,Acevedo,3451 Kaitlin Curve Apt. 962,1961-05-06,118,193
-Monica,Johnson,99253 Steve Parkway,1959-11-06,256,183
-Alexander,Soto,47875 Shelly Fields,1990-02-01,151,180
+FIRST_NAME,LAST_NAME,GENDER,WEIGHT,HEIGHT,TREATMENT,OVERALL_OUTCOME
+Jocelyn,Nitzsche,Two-spirit,183,61,2,62
+Brionna,Donnelly,Pangender,253,65,0,37
+Arvilla,McDermott,Cis Woman,114,62,3,54
+Rosemarie,Haag,Male to female transsexual woman,173,57,3,31
+Antonio,Weissnat,Female to male trans man,109,83,1,23
+Jaren,Turcotte,Cis Male,160,70,3,7
+Alva,Lockman,Transmasculine,254,84,4,7
+Lela,Veum,Cisgender Male,187,57,0,64
+Ezequiel,Luettgen,Male to female transsexual woman,195,75,2,86
+Ivah,Ebert,Cis Woman,162,81,4,17
+Elliott,Bernier,Cisgender Man,101,75,1,69
+Delphia,Koss,Androgynous,212,62,1,58
+Eveline,Lehner,Pangender,220,62,1,67
+Laurie,Keeling,Transgender Person,171,75,1,10
+Joanne,Mayert,Gender Fluid,187,62,0,18
+Adelbert,Hintz,Genderqueer,185,87,1,65
+Jorge,Vandervort,Trans Male,209,79,4,36
+Brady,Stroman,Other,154,85,0,13
+Johnson,O'Keefe,Cisgender,104,62,2,46
+Beau,Crona,Intersex woman,168,60,1,41
+Thora,Willms,FTM,146,61,0,26
+Ray,Johns,Intersex man,187,73,1,11
+Aurelie,Quitzon,M2F,161,88,3,34
+Annabelle,Hoeger,Transgender Female,145,85,0,94
+Celine,Friesen,Intersex person,184,79,2,3
+Jimmie,Dach,Two-spirit,233,76,3,26
+Candace,Block,Trans Man,167,85,1,23
+Berenice,Lind,Intersex,180,82,4,92
+Sunny,Grimes,Cisgender,127,69,4,76
+Emery,Hane,Transexual Female,123,66,0,46
+D'angelo,Kunze,Cisgender,108,75,0,97
+Kolby,Swaniawski,Cis Female,218,87,0,43
+Alanna,Smitham,Two* person,161,69,2,48
+Travon,Auer,Other,227,86,2,35
+Alysson,Stamm,Other,110,74,0,87
+Guido,Jacobs,F2M,227,64,0,28
+Garrison,Block,Other,230,68,0,1
+Chester,Braun,Bigender,218,57,4,82
+Connie,Ullrich,Two-spirit,141,64,2,77
+Donna,Doyle,Transexual Man,104,74,0,53
+Horacio,Dooley,Trans*Person,143,85,2,3
+Aletha,Simonis,Female to Male,158,59,3,48
+Joany,Haley,Intersex person,124,78,2,81
+Rossie,Swaniawski,Gender neutral,193,58,0,3
+Ken,Ziemann,Transgender Person,118,61,3,24
+Guadalupe,Moore,Trans Person,118,81,2,15
+Karolann,Mertz,Trans*Woman,247,76,0,21
+Blair,Wintheiser,Cis Man,253,60,3,98
+Maurine,Bauch,Transgender Female,228,68,1,23
+Alvina,Sanford,Trans Person,234,79,0,70
+Marguerite,Champlin,Trans,206,65,2,79
+Beverly,Brown,Cis Male,190,63,0,33
+Robyn,Emard,Woman,164,63,0,26
+Jailyn,Huels,Male to female transgender woman,198,82,4,87
+Ava,Jast,Neither,242,57,4,21
+Megane,Pagac,Asexual,223,58,3,16
+Earnestine,Bosco,Male to Female,133,67,1,0
+Karson,Trantow,Neutrois,121,87,4,14
+Micheal,Bogisich,Trans Person,97,60,4,37
+Tatyana,Gerlach,Transmasculine,113,75,2,28
+Saige,Ullrich,Trans*Woman,149,71,3,51
+Vesta,Marvin,Trans*Woman,111,59,2,23
+Kenyon,Ledner,Cis Woman,183,64,3,49
+Colt,Pacocha,Intersex woman,242,83,1,43
+Alexane,Langworth,Trans,244,88,0,20
+Audie,Bartell,Transexual Woman,133,81,3,87
+Alexys,Metz,Neither,208,60,0,73
+Willy,Rowe,Transgender Female,100,73,1,22
+Keegan,Predovic,Asexual,99,83,4,13
+Margarete,Wehner,Gender neutral,127,72,4,10
+Petra,Conn,Trans Man,241,84,2,71
+Joaquin,Fahey,Bigender,133,82,2,68
+Alba,Balistreri,MTF,219,77,3,22
+Armand,O'Conner,Female to male transsexual man,173,76,2,69
+Gust,Abshire,T* woman,195,60,4,11
+Lincoln,Bechtelar,Transexual,196,59,0,98
+Izabella,Mills,Genderqueer,242,84,1,59
+Franz,Casper,Cis Female,156,59,1,45
+Aniya,Reynolds,Transexual Male,103,61,1,100
+Felipa,O'Kon,Intersex woman,173,60,0,84
+Joan,Weber,Neither,117,68,1,72
+Isai,Ankunding,MTF,120,73,4,55
+Joannie,Swift,Trans Female,213,63,3,51
+Cruz,Farrell,Trans*Male,143,61,1,41
+Leatha,Fay,Trans*Woman,148,76,1,47
+Alexie,Abernathy,Cis Man,132,73,4,23
+Abigale,Goyette,Cisgender Female,147,79,4,8
+Hilda,Gislason,Cisgender Male,119,60,2,87
+Brionna,Gleichner,Intersex man,102,72,4,44
+Kaden,Senger,Female to male trans man,91,88,3,22
+Verla,Medhurst,Bigender,240,74,4,30
+Asa,Harber,Other,231,73,4,49
+Vladimir,Jacobs,Female to male trans man,131,88,3,22
+Raina,O'Hara,Cis Man,207,62,4,24
+Jayda,Bayer,Transexual Man,148,78,3,95
+Angelita,Breitenberg,Transexual Male,152,71,4,36
+Izaiah,Schmeler,Genderqueer,141,85,3,9

@@ -12,6 +12,7 @@ num_common = int(sys.argv[3])
 fake = Faker()
 
 all_data = []
+schema = {}
 
 def write_file(file_path, data):
     with open(file_path, "w") as csvfile:

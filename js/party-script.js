@@ -20,6 +20,10 @@ const QUERY = "QUERY"
 const SERVER_ADDR = "http://localhost:8083"
 const OPRF_ADDR = "http://localhost:8082"
 
+// number of variables for a regression
+const VARIABLE_THRESHOLD = 3;
+const LEVELS = 9
+
 function readFile() {
     const contents = []
     const FILE_PATH = "../scripts/test_data/0.csv"
