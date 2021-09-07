@@ -32,13 +32,13 @@ app.post('/oprf', async function(req,res) {
 
   // USING HMAC IN PLACE OF OPRF RN
   inputArr.forEach((row) => {
-    row.forEach((value) => {
+    // row.forEach((value) => {
       var out = crypto.createHmac("sha256",
       new Buffer.from(KEY, 'hex'))
-      .update(new Buffer.from(value, 'utf-8'))
+      .update(new Buffer.from(JSON.stringify(row), 'utf-8'))
       .digest('hex');
       output.push(out)
-    });
+    // });
   });
   
   console.log("OPRF output", output)
