@@ -26,13 +26,12 @@ const LEVELS = 9
 
 function readFile() {
     const contents = []
-    const FILE_PATH = "../scripts/test_data/0.csv"
+    const FILE_PATH = "../scripts/test_data/" + party_num + ".csv"
     var fileContents = fs.readFileSync(FILE_PATH).toString().split("\n");
 
-    for (index in fileContents) {
-        var row = fileContents[index].split(",")
+    for (let i = 0; i < fileContents.length; i++) {
+        var row = fileContents[i].split(",")
 
-        console.log(row.length)
         if (row.length > 1) {
             contents.push(row)
         }
@@ -41,7 +40,8 @@ function readFile() {
         //     console.log(v)
         // });
     }
-    return contents
+    header = contents.shift()
+    return [header, contents]
 }
 
 function init_analyst() {
@@ -57,7 +57,7 @@ function init_analyst() {
             "analystId": "analyst",
             "publicKey": JSON.stringify(hexPublicKey)
         }).then((res) => {
-            console.log(res.data)
+            // console.log(res.data)
         });
 
         analystPrivateKey = analystKey.privateKey
@@ -101,7 +101,7 @@ function paillierProcess(processedFile, analystPublicKey) {
 
     encryptedSums = encryptedValues[0]
 
-    console.log("encryptedSums", encryptedSums)
+    // console.log("encryptedSums", encryptedSums)
 
     // add columns
     for (let i = 1; i < encryptedValues.length; i++) {
@@ -138,7 +138,7 @@ function setup_dataowner() {
         var analystPublicKey = new paillierBigint.PublicKey(bigIntPublicKey.n, bigIntPublicKey.g)
 
         // process data
-        var processedFile = readFile()
+        var [header, processedFile] = readFile()
 
         paillierProcess(processedFile, analystPublicKey);
 
