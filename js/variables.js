@@ -18,7 +18,7 @@ const OVERALL_OUTCOME = "OVERALL_OUTCOME"
 
 ///////////////////
 
-const levels = {
+const levels = { 
     "1": [FIRST_NAME, LAST_NAME, SOCIAL_SEC, GENDER, BIRTH_DATE, ST_ADDR_1, ST_ADDR_2, TOWN, ZIP],
     "2": [LAST_NAME, SOCIAL_SEC, BIRTH_DATE, GENDER, ST_ADDR_1, ST_ADDR_2, TOWN, ZIP],
     "3": [SOCIAL_SEC, BIRTH_DATE,  GENDER],

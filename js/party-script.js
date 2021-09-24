@@ -62,8 +62,6 @@ function init_analyst() {
 
         analystPrivateKey = analystKey.privateKey
     });
-
-
 }
 
 // function init_dataowner() {
@@ -110,6 +108,7 @@ function paillierProcess(processedFile, analystPublicKey) {
         }
     }
 
+    return encryptedSums
     // console.log("privatekey", analystPrivateKey)
     // for (let i in encryptedSums) {
 
@@ -140,7 +139,7 @@ function setup_dataowner() {
         // process data
         var [header, processedFile] = readFile()
 
-        paillierProcess(processedFile, analystPublicKey);
+        var encryptedSums = paillierProcess(processedFile, analystPublicKey);
 
         axios.post(OPRF_ADDR + '/oprf', {
             "input": JSON.stringify(processedFile),
@@ -149,9 +148,13 @@ function setup_dataowner() {
             
         });
 
-        console.log(processedFile)
+        // console.log("PROCESSED FILE", processedFile)
+
+        console.log(encryptedSums);
 
     });
+
+    
 
     //
     //
