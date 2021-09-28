@@ -9,7 +9,7 @@ var KEY = "245a1bcdc51b7fd50a96a35d5ba5e58b"
 
 app.use(express.static(__dirname + '/client'));
 app.use(express.urlencoded({extended: true}));
-app.use(express.json()) // To parse the incoming requests with JSON payloads
+app.use(express.json({limit: '50mb'})) // To parse the incoming requests with JSON payloads
 
 
 const server = app.listen(port, function () {

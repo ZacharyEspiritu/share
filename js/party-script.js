@@ -1,9 +1,8 @@
 const axios = require('axios');
 const paillierBigint = require('paillier-bigint')
 const bigintConversion = require('bigint-conversion')
-
-
-
+const crypto = require("crypto")
+const vars = require("./variables")
 const fs = require("fs");
 
 var party = process.argv[2]
@@ -16,6 +15,8 @@ const ANALYST = "ANALYST"
 const INIT = "INIT"
 const SETUP = "SETUP"
 const QUERY = "QUERY"
+
+const MAX_LINKING_LEVEL = 8
 
 const SERVER_ADDR = "http://localhost:8083"
 const OPRF_ADDR = "http://localhost:8082"
@@ -122,11 +123,81 @@ function paillierProcess(processedFile, analystPublicKey) {
 
 }
 
-function setup_dataowner() {
+function hmac(key, value) {
+  return crypto
+    .createHmac("sha256", new Buffer.from(key, 'hex'))
+    .update(new Buffer.from(value))
+    .digest('hex');
+}
 
+function randomValueHex(len) {
+  return crypto
+    .randomBytes(Math.ceil(len / 2))
+    .toString('hex') // convert to hexadecimal format
+    .slice(0, len) // return required number of characters
+}
+
+/**
+ * A hash table of fixed size.
+ */
+class EncryptedHashTable {
+    constructor(hashKey, size) {
+        this.values = [];
+        this.length = 0;
+        this.size = BigInt(size);
+        this.hashKey = hashKey;
+    }
+
+    add(key, value) {
+        const hash = EncryptedHashTable.calculateHash(this.hashKey, key);
+        if (!this.values.hasOwnProperty(hash)) {
+           this.values[hash] = {};
+        }
+        if (!this.values[hash].hasOwnProperty(key)) {
+           this.length++;
+        }
+        this.values[hash][key] = value;
+    }
+
+    static calculateHash(hashKey, key, tableSize) {
+        return bigintConversion.hexToBigint(hmac(hashKey, key)) % tableSize;
+    }
+
+    static pickHashKeyWithNoCollisions(lst, tableSize) {
+        while (true) {
+            const hashKey = randomValueHex(32)
+            const collisionTable = {}
+
+            let recordCount = 0
+            let hadCollision = false
+
+            // TODO(zespirit): Needs to account for linking levels
+            for (const elt of lst) {
+                recordCount++
+                let hash = EncryptedHashTable.calculateHash(hashKey, elt, tableSize)
+                if (collisionTable.hasOwnProperty(hash)) {
+                    console.log(
+                        "Collision at", hash, "after", recordCount,
+                        "records out of", lst.length, "for hash table of size",
+                        tableSize)
+                    hadCollision = true
+                    break
+                }
+                collisionTable[hash] = true
+            }
+
+            if (!hadCollision) {
+                return hashKey
+            }
+        }
+    }
+}
+
+function setup_dataowner() {
     axios.post(SERVER_ADDR + '/retrieveAnalystPublicKey', {
         "analystId": "analyst",
     }).then((res) => {
+
         var hexPublicKey = res.data
 
         var bigIntPublicKey = {
@@ -141,11 +212,51 @@ function setup_dataowner() {
 
         var encryptedSums = paillierProcess(processedFile, analystPublicKey);
 
+        console.log("sending to oprf")
         axios.post(OPRF_ADDR + '/oprf', {
             "input": JSON.stringify(processedFile),
         }).then((res) => {
             console.log("OPRF response:", res.data);
-            
+            var pids = res.data;
+            console.log(processedFile)
+
+            console.log(pids)
+
+            // setup HT starts here?
+            const numPreviousParties = 3; // TODO(zespirit): Do this better
+
+            // Initialize a hash function:
+            const tableSize = BigInt(pids.length * pids.length)
+            const hashKey = EncryptedHashTable.pickHashKeyWithNoCollisions(pids, tableSize)
+            console.log("Found hash key:", hashKey)
+
+            // Initialize all of the necesary hash tables.
+            const ht1 = new EncryptedHashTable(hashKey, tableSize)
+            // for (let record of encryptedSums) {
+            //     // dep or independent columns?
+            // }
+
+            const ht2s = new Array(numPreviousParties)
+            const ht3s = new Array(numPreviousParties)
+            for (let j = 0; j < numPreviousParties; j++) {
+                ht2s[j] = new EncryptedHashTable(hashKey, tableSize)
+
+                const ht3k = new Array(numPreviousParties)
+                for (let k = 0; k < numPreviousParties; k++) {
+                    ht3k[k] = new EncryptedHashTable(hashKey, tableSize)
+                }
+                ht3s[j] = ht3k
+            }
+            console.log("Initialized all hash tables.")
+
+            //
+            for (let record of processedFile) {
+                for (const [level, value] of Object.entries(vars.levels)) {
+                    console.log(level, value)
+                }
+            }
+
+            console.log("done")
         });
 
         // console.log("PROCESSED FILE", processedFile)
@@ -153,23 +264,17 @@ function setup_dataowner() {
         console.log(encryptedSums);
 
     });
-
-    
-
-    //
-    //
-    //
-
-    // axios.post(SERVER_ADDR + "/setup", {
-    //     "schema": "schema",
-    //     "emm_filter": "emm filter",
-    //     "edx_data": "edx data"
-    // }).then((res) => {
-    //     console.log("Server setup response:", res.data);
-    // });
-
-
 }
+
+// function setup_HT_dataowner() {
+
+//     const LINKING_LEVELS = 8
+//     for (let linking_level = 0; linking_level < LINKING_LEVELS; linking_level++) {
+//         var pid = "";
+
+//         for all x
+//     }
+// }
 
 
 // function query_analyst () {
