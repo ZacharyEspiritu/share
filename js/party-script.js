@@ -2,8 +2,8 @@ const axios = require('axios');
 const paillierBigint = require('paillier-bigint')
 const bigintConversion = require('bigint-conversion')
 const crypto = require("crypto")
-const vars = require("./variables")
 const fs = require("fs");
+const variables = require('./variables');
 
 var party = process.argv[2]
 var cmd = process.argv[3]
@@ -193,6 +193,14 @@ class EncryptedHashTable {
     }
 }
 
+function getColumnIndex(x, header) {
+    for (var i in header) {
+        if (x == header[i]) {
+            return i
+        }
+    }
+}
+
 function setup_dataowner() {
     axios.post(SERVER_ADDR + '/retrieveAnalystPublicKey', {
         "analystId": "analyst",
@@ -212,13 +220,13 @@ function setup_dataowner() {
 
         var encryptedSums = paillierProcess(processedFile, analystPublicKey);
 
+
         console.log("sending to oprf")
         axios.post(OPRF_ADDR + '/oprf', {
             "input": JSON.stringify(processedFile),
         }).then((res) => {
             console.log("OPRF response:", res.data);
             var pids = res.data;
-            console.log(processedFile)
 
             console.log(pids)
 
@@ -232,12 +240,9 @@ function setup_dataowner() {
 
             // Initialize all of the necesary hash tables.
             const ht1 = new EncryptedHashTable(hashKey, tableSize)
-            // for (let record of encryptedSums) {
-            //     // dep or independent columns?
-            // }
 
-            const ht2s = new Array(numPreviousParties)
-            const ht3s = new Array(numPreviousParties)
+            const ht2s = new Array(numPreviousParties) // HT using 2 columns
+            const ht3s = new Array(numPreviousParties) // HT using 3 columns
             for (let j = 0; j < numPreviousParties; j++) {
                 ht2s[j] = new EncryptedHashTable(hashKey, tableSize)
 
@@ -249,20 +254,19 @@ function setup_dataowner() {
             }
             console.log("Initialized all hash tables.")
 
-            //
             for (let record of processedFile) {
-                for (const [level, value] of Object.entries(vars.levels)) {
-                    console.log(level, value)
+                for (var col in header) {
+                    var x = header[col]
+                    if (x in variables.INDEPENDENT) {
+                        // do something
+                    }
+
+                    if (x in variables.DEPENDENT) {
+                        // do something
+                    }
                 }
             }
-
-            console.log("done")
         });
-
-        // console.log("PROCESSED FILE", processedFile)
-
-        console.log(encryptedSums);
-
     });
 }
 

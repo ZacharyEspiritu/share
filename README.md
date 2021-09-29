@@ -20,6 +20,6 @@ This should produce a `target/share-1.0-SNAPSHOT.jar` file in the repository. If
 nodemon server.js
 nodemon oprf-service.js
 node party-script.js ANALYST INIT
-node party-script.js DATAOWNER SETUP
+node party-script.js DATAOWNER SETUP 1
 
 ```
