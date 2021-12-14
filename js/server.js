@@ -5,6 +5,7 @@ const path = require('path');
 
 
 let analystPublicKeys = {};
+let encryptedDataKeys = {};
 // const clusion = require('./clusion');
 
 app.use(express.static(__dirname + '/client'));
@@ -38,6 +39,26 @@ app.post('/retrieveAnalystPublicKey', async function(req, res) {
   res.header("Access-Control-Allow-Headers", "X-Requested-With");
   console.log("Successful setup")
   res.status(200).send(analystPublicKeys[analystId]);
+
+});
+
+
+app.post('/postEncryptedDataKeys', async function(req, res) {
+  let dataOwnerId = req.body.dataOwnerId;
+  encryptedDataKeys[dataOwnerId] = req.body.encryptedDataKeys; 
+
+  console.log("Storing encrypted data keys ");
+  res.status(200).send("Success: storing keys for dataowner: " + dataOwnerId, 200);
+});
+
+app.post('/retrieveAnalystPublicKey', async function(req, res) {
+  var dataOwnerId = req.body.dataOwnerId;
+
+  console.log("Retrieving encrypted data keys", encryptedDataKeys)
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "X-Requested-With");
+  console.log("sent keys")
+  res.status(200).send(encryptedDataKeys[dataOwnerId]);
 
 });
 

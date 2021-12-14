@@ -326,6 +326,13 @@ function setup_dataowner() {
 
         var encryptedSums = paillierProcess(processedFile, analystPublicKey);
 
+        // SEND KEYS TO SERVER!!!!
+        axios.post(SERVER_ADDR + '/postEncryptedDataKeys', {
+            "dataOwnerId": party_num.toString(),
+            "encryptedDataKeys": JSON.stringify({"structure": "some hex values!"})
+        }).then((res) => {
+            console.log(res.data)
+        });
 
         console.log("sending to oprf")
         axios.post(OPRF_ADDR + '/oprf', {

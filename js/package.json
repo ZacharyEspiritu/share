@@ -10,12 +10,14 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@cloudflare/voprf-ts": "^0.8.0",
     "axios": "^0.21.1",
     "bigint-conversion": "^2.1.12",
     "express": "^4.17.1",
     "https": "^1.0.0",
     "oprf": "^2.0.0",
     "paillier-bigint": "^3.2.5",
-    "path": "^0.12.7"
+    "path": "^0.12.7",
+    "sjcl": "^1.0.8"
   }
 }
