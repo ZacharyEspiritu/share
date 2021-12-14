@@ -137,6 +137,168 @@ function randomValueHex(len) {
     .slice(0, len) // return required number of characters
 }
 
+function symmetricEncrypt(key, plaintext) {
+    const iv = crypto.randomBytes(16);
+    const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(key), iv);
+    let encrypted = cipher.update(plaintext);
+    encrypted = Buffer.concat([encrypted, cipher.final()]);
+    return { iv: iv.toString('hex'), encryptedData: encrypted.toString('hex') };
+}
+
+function symmetricDecrypt(key, ciphertext) {
+    const iv = Buffer.from(ciphertext.iv, 'hex');
+    const encryptedText = Buffer.from(ciphertext.encryptedData, 'hex');
+    const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(key), iv);
+    let decrypted = decipher.update(encryptedText);
+    decrypted = Buffer.concat([decrypted, decipher.final()]);
+    return decrypted.toString();
+}
+
+/**
+ * A multimap.
+ */
+class Multimap {
+    constructor(iterable) {
+        this.map = new Map();
+
+        if (iterable) {
+            // We want to have a reference to the same `this` in the closure, so
+            // we use this `self` variable to maintain the reference.
+            const self = this;
+            iterable.forEach(function(i) {
+                self.map.set(i[0], i[1]);
+            });
+        }
+    }
+
+    get(key) {
+        return this.map.get(key);
+    }
+
+    set(key, val) {
+        const args = Array.prototype.slice.call(arguments);
+        key = args.shift();
+
+        let entry = this.map.get(key);
+        if (!entry) {
+            entry = [];
+            this.map.set(key, entry);
+        }
+
+        Array.prototype.push.apply(entry, args);
+        return this;
+    }
+
+    delete(key, val) {
+        if (!this.map.has(key)) {
+            return false;
+        }
+
+        if (arguments.length == 1) {
+            this.map.delete(key);
+            return true;
+        } else {
+            let entry = this.map.get(key);
+            let idx = entry.indexOf(val);
+            if (idx != -1) {
+                entry.splice(idx, 1);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    keys() {
+        return Multimap.#makeIterator(this.map.keys())
+    }
+
+    static #makeIterator(iterator){
+        if (Array.isArray(iterator)) {
+            let nextIndex = 0;
+            return {
+                next() {
+                    if (nextIndex < iterator.length) {
+                        return {value: iterator[nextIndex++], done: false};
+                    } else {
+                        return {done: true};
+                    }
+                }
+            };
+        }
+
+        return iterator;
+    }
+}
+
+function hexToBytes(hex) {
+    for (var bytes = [], c = 0; c < hex.length; c += 2)
+        bytes.push(parseInt(hex.substr(c, 2), 16));
+    return bytes;
+}
+
+/**
+ * Response-revealing implementation of PiBase.
+ */
+class PiBase {
+    constructor(multimap, isResponseRevealing = false) {
+        this.entries = {};
+        this.key = randomValueHex(32);
+        this.isResponseRevealing = isResponseRevealing;
+
+        for (const keyword of multimap.keys()) {
+            const labelKey = hexToBytes(hmac(this.key, keyword + "label"));
+            const valueKey = hexToBytes(hmac(this.key, keyword + "value"));
+            let counter = 0;
+            for (const value of multimap.get(keyword)) {
+                const encryptedLabel = hmac(labelKey, counter.toString());
+                const encryptedValue = symmetricEncrypt(valueKey, value);
+                counter += 1;
+                this.entries[encryptedLabel] = encryptedValue;
+            }
+        }
+    }
+
+    toJson() {
+        return JSON.stringify(this.entries)
+    }
+
+    token(keyword) {
+        const labelKey = hexToBytes(hmac(this.key, keyword + "label"));
+        let searchToken = {labelKey: labelKey}
+
+        if (this.isResponseRevealing) {
+            const valueKey = hexToBytes(hmac(this.key, keyword + "value"));
+            searchToken.valueKey = valueKey;
+        }
+
+        return searchToken;
+    }
+
+    query(searchToken) {
+        const result = new Set();
+        let counter = 0;
+        while (true) {
+            const encryptedLabel = hmac(searchToken.labelKey, counter.toString());
+            if (!(encryptedLabel in this.entries)) {
+                break;
+            }
+
+            const encryptedValue = this.entries[encryptedLabel];
+            if (this.isResponseRevealing) {
+                const plaintextValue = symmetricDecrypt(searchToken.valueKey, encryptedValue);
+                result.add(plaintextValue);
+            } else {
+                result.add(encryptedValue);
+            }
+
+            counter += 1;
+        }
+
+        return result;
+    }
+}
+
 /**
  * A hash table of fixed size.
  */
@@ -206,6 +368,24 @@ function setup_dataowner() {
         "analystId": "analyst",
     }).then((res) => {
 
+        console.log("Setting up multimap...")
+        const mmFilter = new Multimap();
+        mmFilter.set("a", "0");
+        mmFilter.set("a", "1");
+        mmFilter.set("a", "2");
+        mmFilter.set("b", "3");
+        mmFilter.set("c", "4");
+        mmFilter.set("c", "5");
+
+        for (const key of mmFilter.keys()) {
+            console.log(key, mmFilter.get(key));
+        }
+
+        console.log("Setting up EMM...")
+        const emmFilter = new PiBase(mmFilter);
+        console.log(emmFilter);
+        console.log(emmFilter.query(emmFilter.token("a")))
+
         var hexPublicKey = res.data
 
         var bigIntPublicKey = {
@@ -270,26 +450,7 @@ function setup_dataowner() {
     });
 }
 
-// function setup_HT_dataowner() {
-
-//     const LINKING_LEVELS = 8
-//     for (let linking_level = 0; linking_level < LINKING_LEVELS; linking_level++) {
-//         var pid = "";
-
-//         for all x
-//     }
-// }
-
-
-// function query_analyst () {
-
-// }
-
 if (party == DATAOWNER) {
-    // if (cmd == INIT) {
-    //     init_dataowner()
-    // }
-
     if (cmd == SETUP) {
         setup_dataowner()
     }
