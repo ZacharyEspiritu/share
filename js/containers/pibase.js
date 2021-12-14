@@ -61,12 +61,12 @@ class PiBase {
      * Computes a PiBase search token over the given secret key and
      * keyword.
      */
-    static token(key, keyword) {
-        const labelKey = simplecrypto.hkdf(this.key, keyword + "label")
+    static token(key, keyword, isResponseRevealing = false) {
+        const labelKey = simplecrypto.hkdf(key, keyword + "label")
         let searchToken = {labelKey: labelKey}
 
-        if (this.isResponseRevealing) {
-            const valueKey = simplecrypto.hkdf(this.key, keyword + "value")
+        if (isResponseRevealing) {
+            const valueKey = simplecrypto.hkdf(key, keyword + "value")
             searchToken.valueKey = valueKey
         }
 
