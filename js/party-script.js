@@ -5,8 +5,11 @@ const crypto = require("crypto")
 const fs = require("fs");
 const variables = require('./variables');
 
-const multimap = require("./containers/multimap");
-const Multimap = multimap.Multimap;
+const simplecrypto = require("simplecrypto");
+
+const containers = require("./containers");
+const Multimap = containers.Multimap;
+const PiBase = containers.PiBase;
 
 var party = process.argv[2]
 var cmd = process.argv[3]
@@ -126,105 +129,6 @@ function paillierProcess(processedFile, analystPublicKey) {
 
 }
 
-function hmac(key, value) {
-  return crypto
-    .createHmac("sha256", new Buffer.from(key, 'hex'))
-    .update(new Buffer.from(value))
-    .digest('hex');
-}
-
-function randomValueHex(len) {
-  return crypto
-    .randomBytes(Math.ceil(len / 2))
-    .toString('hex') // convert to hexadecimal format
-    .slice(0, len) // return required number of characters
-}
-
-function symmetricEncrypt(key, plaintext) {
-    const iv = crypto.randomBytes(16);
-    const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(key), iv);
-    let encrypted = cipher.update(plaintext);
-    encrypted = Buffer.concat([encrypted, cipher.final()]);
-    return { iv: iv.toString('hex'), encryptedData: encrypted.toString('hex') };
-}
-
-function symmetricDecrypt(key, ciphertext) {
-    const iv = Buffer.from(ciphertext.iv, 'hex');
-    const encryptedText = Buffer.from(ciphertext.encryptedData, 'hex');
-    const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(key), iv);
-    let decrypted = decipher.update(encryptedText);
-    decrypted = Buffer.concat([decrypted, decipher.final()]);
-    return decrypted.toString();
-}
-
-function hexToBytes(hex) {
-    for (var bytes = [], c = 0; c < hex.length; c += 2)
-        bytes.push(parseInt(hex.substr(c, 2), 16));
-    return bytes;
-}
-
-/**
- * Response-revealing implementation of PiBase.
- */
-class PiBase {
-    constructor(multimap, isResponseRevealing = false) {
-        this.entries = {};
-        this.key = randomValueHex(32);
-        this.isResponseRevealing = isResponseRevealing;
-
-        for (const keyword of multimap.keys()) {
-            const labelKey = hexToBytes(hmac(this.key, keyword + "label"));
-            const valueKey = hexToBytes(hmac(this.key, keyword + "value"));
-            let counter = 0;
-            for (const value of multimap.get(keyword)) {
-                const encryptedLabel = hmac(labelKey, counter.toString());
-                const encryptedValue = symmetricEncrypt(valueKey, value);
-                counter += 1;
-                this.entries[encryptedLabel] = encryptedValue;
-            }
-        }
-    }
-
-    toJson() {
-        return JSON.stringify(this.entries)
-    }
-
-    token(keyword) {
-        const labelKey = hexToBytes(hmac(this.key, keyword + "label"));
-        let searchToken = {labelKey: labelKey}
-
-        if (this.isResponseRevealing) {
-            const valueKey = hexToBytes(hmac(this.key, keyword + "value"));
-            searchToken.valueKey = valueKey;
-        }
-
-        return searchToken;
-    }
-
-    query(searchToken) {
-        const result = new Set();
-        let counter = 0;
-        while (true) {
-            const encryptedLabel = hmac(searchToken.labelKey, counter.toString());
-            if (!(encryptedLabel in this.entries)) {
-                break;
-            }
-
-            const encryptedValue = this.entries[encryptedLabel];
-            if (this.isResponseRevealing) {
-                const plaintextValue = symmetricDecrypt(searchToken.valueKey, encryptedValue);
-                result.add(plaintextValue);
-            } else {
-                result.add(encryptedValue);
-            }
-
-            counter += 1;
-        }
-
-        return result;
-    }
-}
-
 /**
  * A hash table of fixed size.
  */
@@ -248,12 +152,12 @@ class EncryptedHashTable {
     }
 
     static calculateHash(hashKey, key, tableSize) {
-        return bigintConversion.hexToBigint(hmac(hashKey, key)) % tableSize;
+        return simplecrypto.hmac(hashKey, key).readBigInt64BE() % tableSize;
     }
 
     static pickHashKeyWithNoCollisions(lst, tableSize) {
         while (true) {
-            const hashKey = randomValueHex(32)
+            const hashKey = simplecrypto.secureRandom(32)
             const collisionTable = {}
 
             let recordCount = 0
