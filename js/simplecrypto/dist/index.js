@@ -1,9 +1,12 @@
 'use strict';
 const _crypto = require("crypto");
 function hmac(key, value) {
-    return _crypto.createHmac("sha256", Buffer.from(key, 'hex'))
+    return _crypto.createHmac("sha256", Buffer.from(key))
         .update(Buffer.from(value))
         .digest();
+}
+function hkdf(key, value) {
+    return hmac(key, value);
 }
 function secureRandom(numBytes) {
     return _crypto.randomBytes(numBytes);
@@ -23,6 +26,7 @@ function symmetricDecrypt(key, ciphertext) {
 }
 module.exports = Object.freeze({
     hmac,
+    hkdf,
     secureRandom,
     symmetricEncrypt,
     symmetricDecrypt,

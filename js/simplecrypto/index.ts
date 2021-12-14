@@ -2,10 +2,14 @@
 
 const _crypto = require("crypto");
 
-function hmac(key: string, value: string): Buffer {
-    return _crypto.createHmac("sha256", Buffer.from(key, 'hex'))
+function hmac(key: string|Buffer, value: string): Buffer {
+    return _crypto.createHmac("sha256", Buffer.from(key))
         .update(Buffer.from(value))
         .digest();
+}
+
+function hkdf(key: string|Buffer, value: string): Buffer {
+    return hmac(key, value)
 }
 
 function secureRandom(numBytes: number): Buffer {
@@ -17,7 +21,7 @@ type Ciphertext = {
     ct: Buffer
 }
 
-function symmetricEncrypt(key: string, plaintext: string): Ciphertext {
+function symmetricEncrypt(key: string|Buffer, plaintext: string): Ciphertext {
     const iv = secureRandom(16);
     const cipher = _crypto.createCipheriv('aes-256-cbc', Buffer.from(key), iv);
     let ct = cipher.update(plaintext);
@@ -25,7 +29,7 @@ function symmetricEncrypt(key: string, plaintext: string): Ciphertext {
     return { iv, ct };
 }
 
-function symmetricDecrypt(key: string, ciphertext: Ciphertext): string {
+function symmetricDecrypt(key: string|Buffer, ciphertext: Ciphertext): string {
     const decipher = _crypto.createDecipheriv('aes-256-cbc', Buffer.from(key), ciphertext.iv);
     let decrypted = decipher.update(ciphertext.ct);
     decrypted = Buffer.concat([decrypted, decipher.final()]);
@@ -34,6 +38,7 @@ function symmetricDecrypt(key: string, ciphertext: Ciphertext): string {
 
 module.exports = Object.freeze({
     hmac,
+    hkdf,
     secureRandom,
     symmetricEncrypt,
     symmetricDecrypt,
