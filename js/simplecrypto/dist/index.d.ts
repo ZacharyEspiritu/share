@@ -14,6 +14,6 @@ export declare type PKEKey = {
     publicKey: PKEPublicKey;
     privateKey: PKEPrivateKey;
 };
-export declare function pkeKeyGen(): any;
+export declare function pkeKeyGen(): PKEKey;
 export declare function pkeEncrypt(publicKey: PKEPublicKey, plaintext: string): Buffer;
 export declare function pkeDecrypt(privateKey: PKEPrivateKey, ciphertext: Buffer): string;

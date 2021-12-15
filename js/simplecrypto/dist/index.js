@@ -32,19 +32,20 @@ function symmetricDecrypt(key, ciphertext) {
 }
 exports.symmetricDecrypt = symmetricDecrypt;
 function pkeKeyGen() {
-    return crypto.generateKeyPairSync('ed25519', {
+    const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
         modulusLength: 4096,
         publicKeyEncoding: {
-            type: 'spki',
+            type: 'pkcs1',
             format: 'pem',
         },
         privateKeyEncoding: {
-            type: 'pkcs8',
+            type: 'pkcs1',
             format: 'pem',
             cipher: 'aes-256-cbc',
             passphrase: '',
         },
     });
+    return { publicKey, privateKey };
 }
 exports.pkeKeyGen = pkeKeyGen;
 function pkeEncrypt(publicKey, plaintext) {

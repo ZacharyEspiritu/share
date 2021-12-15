@@ -211,6 +211,8 @@ async function setup_dataowner() {
     const [columnNames, records] = readFile()
     logSetup("Read %d records.", records.length)
 
+    const pke = simplecrypto.pkeKeyGen()
+
     /**
      * Some unfinished code related to AHE sums computed using
      * the server's public key.
@@ -222,11 +224,11 @@ async function setup_dataowner() {
     const hexPublicKey = publicKeyRequest.data
 
     const bigIntPublicKey = {
-        "n": bigintConversion.hexToBigint(hexPublicKey.n),
-        "g": bigintConversion.hexToBigint(hexPublicKey.g),
+        n: bigintConversion.hexToBigint(hexPublicKey.n),
+        g: bigintConversion.hexToBigint(hexPublicKey.g),
     }
-
     const analystPublicKey = new paillierBigint.PublicKey(bigIntPublicKey.n, bigIntPublicKey.g)
+
     const encryptedSums = paillierProcess(records, analystPublicKey);
 
     // SEND KEYS TO SERVER!!!!
@@ -240,8 +242,8 @@ async function setup_dataowner() {
     /**
      * Compute linking tags via the OPRF.
      *
-     * We assume that the returned pids are in the same order as
-     * the input records; that is, that the pids have a 1:1
+     * We assume that the returned linking tags are in the same order as
+     * the input records; that is, that the linking tags have a 1:1
      * correspondence to the record that they're associated with.
      */
     logSetup("Requesting linking tags from the OPRF server...")
@@ -249,12 +251,12 @@ async function setup_dataowner() {
         OPRF_ADDR + '/oprf',
         { "input": JSON.stringify(records) }
     )
-    const pids = oprfRequest.data
-    logSetup("Received %d linking tags.", pids.length)
+    const linkingTags = oprfRequest.data
+    logSetup("Received %d linking tags.", linkingTags.length)
 
     /**
      * We generate the recordIds for each record here before the
-     * zip so that we can zip together the PIDs and the RIDs
+     * zip so that we can zip together the linking tags and the RIDs
      * with their associated records easily in the following line.
      */
     logSetup("Generating record IDs...")
@@ -266,7 +268,7 @@ async function setup_dataowner() {
     /**
      * This associates each record with its associated PID and RID.
      */
-    const recordsWithIdsAndTags = zip([pids, recordIds, records])
+    const recordsWithIdsAndTags = zip([linkingTags, recordIds, records])
 
     /**
      * Initialize plaintext versions of the multimap and dictionary
@@ -332,24 +334,57 @@ async function setup_dataowner() {
     const keyFilter = emmFilter.setup(mmFilter)
 
     /**
+     * Send the analyst the key.
+     */
+    const key = { keyData, keyLink, keyFilter }
+    // const pkeEncryptedKey = simplecrypto.pkeEncrypt(key, JSON.stringify(key))
+    // TODO get the analyst key, send it to pkeEncryptedKey
+
+    /**
      * Serialize the encrypted structures.
      */
     const eds = { edxData, edxLink, emmFilter }
     const serializedEds = JSON.stringify(eds)
 
     // TODO(zespirit): Missing PKE encryption here.
+    // TODO(zespirit): Send serializedEds to the server here.
 
-    // setup HT starts here?
-    const numPreviousParties = 3; // TODO(zespirit): Do this better
+
+    // TODO(zespirit): Retrieve previous HTs from server.
 
     // Initialize a hash function:
-    const tableSize = BigInt(pids.length * pids.length)
-    const hashKey = EncryptedHashTable.pickHashKeyWithNoCollisions(pids, tableSize)
+    const tableSize = BigInt(linkingTags.length * linkingTags.length)
+    const hashKey = EncryptedHashTable.pickHashKeyWithNoCollisions(linkingTags, tableSize)
     console.log("Found hash key:", hashKey)
 
     // Initialize all of the necesary hash tables.
     const ht1 = new EncryptedHashTable(hashKey, tableSize)
 
+    for (const [linkTag, recordId, record] of recordsWithIdsAndTags) {
+        // for (const [index, subTag] of linkTag.entries()) {
+        //     const dxSums = new Map()
+        //     // TODO(zespirit): We only want to iterate over columns in X^nums.
+        //     for (const columnName of columnNames) {
+        //         const columnIndex = getColumnIndex(columnName, columnNames)
+        //         const columnValue = record[columnIndex]
+        //         dxSums.set(columnName, analystPublicKey.encrypt())
+        //     }
+        // }
+        dxData.set(recordId, record)
+        dxLink.set(recordId, linkTag)
+    }
+
+
+    // setup HT starts here?
+    const numPreviousParties = 3; // TODO(zespirit): Do this better
+
+    // // Initialize a hash function:
+    // const tableSize = BigInt(linkingTags.length * linkingTags.length)
+    // const hashKey = EncryptedHashTable.pickHashKeyWithNoCollisions(linkingTags, tableSize)
+    // console.log("Found hash key:", hashKey)
+
+    // // Initialize all of the necesary hash tables.
+    // const ht1 = new EncryptedHashTable(hashKey, tableSize)
     const ht2s = new Array(numPreviousParties) // HT using 2 columns
     const ht3s = new Array(numPreviousParties) // HT using 3 columns
     for (let j = 0; j < numPreviousParties; j++) {

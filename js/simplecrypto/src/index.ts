@@ -44,20 +44,21 @@ export type PKEKey = {
     privateKey: PKEPrivateKey
 }
 
-export function pkeKeyGen() {
-    return crypto.generateKeyPairSync('ed25519', {
+export function pkeKeyGen(): PKEKey {
+    const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
         modulusLength: 4096,
         publicKeyEncoding: {
-            type: 'spki',
+            type: 'pkcs1',
             format: 'pem',
         },
         privateKeyEncoding: {
-            type: 'pkcs8',
+            type: 'pkcs1',
             format: 'pem',
             cipher: 'aes-256-cbc',
             passphrase: '',
         },
     })
+    return { publicKey, privateKey }
 }
 
 export function pkeEncrypt(publicKey: PKEPublicKey, plaintext: string): Buffer {
