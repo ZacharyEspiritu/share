@@ -59,7 +59,7 @@ function readFile() {
 
 function init_analyst() {
 
-    paillierBigint.generateRandomKeys(2048).then((analystKey) => {
+    paillierBigint.generateRandomKeys(1024).then((analystKey) => {
 
         var hexPublicKey = {
             "n": bigintConversion.bigintToHex(analystKey.publicKey.n),
@@ -361,22 +361,28 @@ async function setup_dataowner() {
     const hashTables = new Map()
 
     const selfHashTable = new Map()
-    hashTables.set(party_num, selfHashTable)
+    hashTables.set(dataOwnerId, selfHashTable)
 
     for (const [linkTag, recordId, record] of recordsWithIdsAndTags) {
+        logSetup("Setting up hash tables for record...")
         for (const [linkingLevel, subTag] of linkTag.entries()) {
             const dxSums = new Map()
-            // TODO(zespirit): We only want to iterate over columns in X^nums.
-            for (const columnName of columnNames) {
+            for (const columnName of variables.NUMERICAL) {
                 const columnIndex = getColumnIndex(columnName, columnNames)
                 const columnValue = record[columnIndex]
                 const numValue = BigInt(0)
                 dxSums.set(columnName, analystPublicKey.encrypt(numValue))
             }
 
+            // This represents
+            //
+            //      HT[dataOwnerId][linkingLevel] = DX_sums       and
+            //
+            //      DX_sums[columnName]
+            //
             const hashKey = hashKeysPerLevel.get(linkingLevel)
             const hashTable = new EncryptedHashTable(hashKey, tableSize)
-            hashTables.get(party_num).set(linkingLevel, dxSums)
+            hashTables.get(dataOwnerId).set(linkingLevel, dxSums)
         }
     }
     logSetup("Done initializing hash tables.")

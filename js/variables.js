@@ -46,6 +46,8 @@ const weights = {
     OVERALL_OUTCOME: 9
 }
 
+const NUMERICAL = [HEIGHT, TREAT_SUCCESS, OVERALL_OUTCOME]
+
 const INDEPENDENT = [FIRST_NAME, LAST_NAME, SOCIAL_SEC, GENDER, BIRTH_DATE, ST_ADDR_1, ST_ADDR_2, TOWN, ZIP,
                     WEIGHT, HEIGHT, SMOKER, TREATMENT]
 const DEPENDENT = [TREAT_SUCCESS, OVERALL_OUTCOME]
@@ -57,5 +59,6 @@ module.exports = Object.freeze({
     INDEPENDENT, 
     DEPENDENT,
     levels,
-    weights
+    weights,
+    NUMERICAL
 });
