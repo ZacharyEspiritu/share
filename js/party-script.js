@@ -205,7 +205,7 @@ async function setup_dataowner() {
      * the server's public key.
      */
     const publicKeyRequest = await axios.post(
-        SERVER_ADDR + '/retrieveAnalystPublicKeys',
+        SERVER_ADDR + '/getAnalystPublicKeys',
         { "analystId": "analyst" }
     )
 
@@ -327,7 +327,15 @@ async function setup_dataowner() {
     /**
      * Serialize the encrypted structures.
      */
-    const eds = { edxData, edxLink, emmFilter }
+     const eds = { edxData, edxLink, emmFilter }
+
+    axios.post(SERVER_ADDR + '/postSetup', {
+        "dataOwnerId": party_num.toString(),
+        "keys": JSON.stringify({"structure": "some hex values!"}),
+        "eds": JSON.stringify(eds)
+    }).then((res) => {
+        console.log(res.data)
+    });
 
     // TODO(zespirit): Missing PKE encryption here.
     // TODO(zespirit): Send serializedEds to the server here.
@@ -335,70 +343,68 @@ async function setup_dataowner() {
 
     // TODO(zespirit): Retrieve previous HTs from server.
 
-    // Initialize a hash function:
-    logSetup("Initializing hash functions...")
-    const tableSize = BigInt(linkingTags.length * linkingTags.length)
-    const zippedTags = zip(linkingTags)
-    let hashKey = undefined;
-    for (const [linkingLevel, levelTags] of zippedTags.entries()) {
-        hashKey = EncryptedHashTable.pickHashKeyWithNoCollisions(levelTags, tableSize)
-        console.log("Found hash key for level", linkingLevel, ":", hashKey)
-    }
-    logSetup("Done initializing hash keys.")
-
-
-    // Initialize all of the necesary hash tables.
-    const ht1 = new EncryptedHashTable(hashKey, tableSize)
-
-    for (const [linkTag, recordId, record] of recordsWithIdsAndTags) {
-        // for (const [index, subTag] of linkTag.entries()) {
-        //     const dxSums = new Map()
-        //     // TODO(zespirit): We only want to iterate over columns in X^nums.
-        //     for (const columnName of columnNames) {
-        //         const columnIndex = getColumnIndex(columnName, columnNames)
-        //         const columnValue = record[columnIndex]
-        //         dxSums.set(columnName, analystPublicKey.encrypt())
-        //     }
-        // }
-        // dxData.set(recordId, record)
-        // dxLink.set(recordId, linkTag)
-    }
-    logSetup("Done initializing hash tables.")
-
-
-    // // setup HT starts here?
-    // const numPreviousParties = 3; // TODO(zespirit): Do this better
-
-    // // // Initialize a hash function:
-    // // const tableSize = BigInt(linkingTags.length * linkingTags.length)
-    // // const hashKey = EncryptedHashTable.pickHashKeyWithNoCollisions(linkingTags, tableSize)
-    // // console.log("Found hash key:", hashKey)
-
-    // // // Initialize all of the necesary hash tables.
-    // // const ht1 = new EncryptedHashTable(hashKey, tableSize)
-    // const ht2s = new Array(numPreviousParties) // HT using 2 columns
-    // const ht3s = new Array(numPreviousParties) // HT using 3 columns
-    // for (let j = 0; j < numPreviousParties; j++) {
-    //     ht2s[j] = new EncryptedHashTable(hashKey, tableSize)
-
-    //     const ht3k = new Array(numPreviousParties)
-    //     for (let k = 0; k < numPreviousParties; k++) {
-    //         ht3k[k] = new EncryptedHashTable(hashKey, tableSize)
-    //     }
-    //     ht3s[j] = ht3k
+    // // Initialize a hash function:
+    // logSetup("Initializing hash functions...")
+    // const tableSize = BigInt(linkingTags.length * linkingTags.length)
+    // const zippedTags = zip(linkingTags)
+    // let hashKey = undefined;
+    // for (const [linkingLevel, levelTags] of zippedTags.entries()) {
+    //     hashKey = EncryptedHashTable.pickHashKeyWithNoCollisions(levelTags, tableSize)
+    //     console.log("Found hash key for level", linkingLevel, ":", hashKey)
     // }
-    // console.log("Initialized all hash tables.")
+    // logSetup("Done initializing hash keys.")
 
 
-    // // SEND KEYS TO SERVER!!!!
-    // axios.post(SERVER_ADDR + '/postSetup', {
-    //     "dataOwnerId": party_num.toString(),
-    //     "encryptedDataKeys": JSON.stringify({"structure": "some hex values!"}),
-    //     "encryptedDataStructures": JSON.stringify(eds)
-    // }).then((res) => {
-    //     console.log(res.data)
-    // });
+    // // Initialize all of the necesary hash tables.
+    // const ht1 = new EncryptedHashTable(hashKey, tableSize)
 
+    // for (const [linkTag, recordId, record] of recordsWithIdsAndTags) {
+    //     // for (const [index, subTag] of linkTag.entries()) {
+    //     //     const dxSums = new Map()
+    //     //     // TODO(zespirit): We only want to iterate over columns in X^nums.
+    //     //     for (const columnName of columnNames) {
+    //     //         const columnIndex = getColumnIndex(columnName, columnNames)
+    //     //         const columnValue = record[columnIndex]
+    //     //         dxSums.set(columnName, analystPublicKey.encrypt())
+    //     //     }
+    //     // }
+    //     // dxData.set(recordId, record)
+    //     // dxLink.set(recordId, linkTag)
+    // }
+    // logSetup("Done initializing hash tables.")
+
+
+    // // // setup HT starts here?
+    // // const numPreviousParties = 3; // TODO(zespirit): Do this better
+
+    // // // // Initialize a hash function:
+    // // // const tableSize = BigInt(linkingTags.length * linkingTags.length)
+    // // // const hashKey = EncryptedHashTable.pickHashKeyWithNoCollisions(linkingTags, tableSize)
+    // // // console.log("Found hash key:", hashKey)
+
+    // // // // Initialize all of the necesary hash tables.
+    // // // const ht1 = new EncryptedHashTable(hashKey, tableSize)
+    // // const ht2s = new Array(numPreviousParties) // HT using 2 columns
+    // // const ht3s = new Array(numPreviousParties) // HT using 3 columns
+    // // for (let j = 0; j < numPreviousParties; j++) {
+    // //     ht2s[j] = new EncryptedHashTable(hashKey, tableSize)
+
+    // //     const ht3k = new Array(numPreviousParties)
+    // //     for (let k = 0; k < numPreviousParties; k++) {
+    // //         ht3k[k] = new EncryptedHashTable(hashKey, tableSize)
+    // //     }
+    // //     ht3s[j] = ht3k
+    // // }
+    // // console.log("Initialized all hash tables.")
+
+}
+
+function query_analyst() {
+    axios.post(SERVER_ADDR + '/postQuery', {
+        "query": "test"
+    }).then((res) => {
+        console.log(res.data)
+    });
 
 }
 
@@ -411,5 +417,9 @@ if (party == DATAOWNER) {
 if (party == ANALYST) {
     if (cmd == INIT) {
         init_analyst()
+    }
+
+    if (cmd == QUERY) {
+        query_analyst()
     }
 }

@@ -6,12 +6,11 @@ const jsgraphs = require('js-graph-algorithms');
 
 let analystPublicKeys = {};
 let encryptedDataKeys = {};
-// const clusion = require('./clusion');
+let encryptedDataStructures = {};
 
 app.use(express.static(__dirname + '/client'));
 app.use(express.urlencoded({extended: true}));
-app.use(express.json()) // To parse the incoming requests with JSON payloads
-app.use(express.json({limit: '5000mb'})) // To parse the incoming requests with JSON payloads
+app.use(express.json({limit: '50mb'})) // To parse the incoming requests with JSON payloads
 
 
 const server = app.listen(port, function () {
@@ -33,7 +32,7 @@ app.post('/postAnalystPublicKeys', async function(req, res) {
   res.status(200).send("Success: storing analyst public key");
 });
 
-app.post('/retrieveAnalystPublicKeys', async function(req, res) {
+app.post('/getAnalystPublicKeys', async function(req, res) {
   var analystId = req.body.analystId;
 
   console.log("Retrieving analyst public key", analystId)
@@ -47,42 +46,25 @@ app.post('/retrieveAnalystPublicKeys', async function(req, res) {
 
 app.post('/postSetup', async function(req, res) {
   let dataOwnerId = req.body.dataOwnerId;
-  encryptedDataKeys[dataOwnerId] = req.body.encryptedDataKeys; 
-  encryptedDataStructures[dataOwnerId] = req.body.encryptedDataStructures;
+  encryptedDataKeys[dataOwnerId] = req.body.keys; 
+  encryptedDataStructures[dataOwnerId] = req.body.eds;
 
   // hash tables go in here too??
 
   console.log("Storing encrypted data keys ");
-  res.status(200).send("Success: storing keys for dataowner: " + dataOwnerId, 200);
+  res.status(200).send("Success: storing keys for dataowner: " + dataOwnerId);
 });
 
+app.post('/postQuery', async function(req, res) {
+  let query = req.body.query;
 
-app.post('/retrieveAnalystPublicKey', async function(req, res) {
-  var dataOwnerId = req.body.dataOwnerId;
-
-  console.log("Retrieving encrypted data keys", encryptedDataKeys)
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "X-Requested-With");
-  console.log("sent keys")
-  res.status(200).send(encryptedDataKeys[dataOwnerId]);
-
-});
-
-app.post('/setup', async function(req,res) {  
-  var schema = req.body.schema;
-  var emm_filter = req.body.emm_filter;
-  var edx_data = req.body.edx_data;
-
-  console.log("setup: ", schema, emm_filter, edx_data)
-  // update database
-
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "X-Requested-With");
-  console.log("Successful setup")
-  res.status(200).send(JSON.stringify("Success"));
+  link()
+  console.log("Query success");
+  res.status(200).send("test");
 });
 
 
 function link() {
   var g = new jsgraphs.Graph(6);
+  console.log(g)
 }
