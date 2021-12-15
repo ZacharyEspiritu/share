@@ -1,5 +1,5 @@
 {
-  "name": "simplecrypto",
+  "name": "containers",
   "version": "1.0.0",
   "description": "",
   "type": "commonjs",
@@ -15,5 +15,8 @@
   "license": "ISC",
   "devDependencies": {
     "typescript": "^4.5.4"
+  },
+  "dependencies": {
+    "simplecrypto": "file:../simplecrypto"
   }
 }

@@ -7,7 +7,7 @@ const variables = require('./variables');
 
 const simplecrypto = require("simplecrypto");
 
-const containers = require("./containers");
+const containers = require("containers");
 const Multimap = containers.Multimap;
 const PiBase = containers.PiBase;
 
