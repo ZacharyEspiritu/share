@@ -20,7 +20,7 @@ class PiBase {
      * calling PiBase instance.
      */
     toJson() {
-        return JSON.stringify(this.entries);
+        return JSON.stringify(this);
     }
     /**
      * Converts the given JSON blob (representing a PiBase instance that

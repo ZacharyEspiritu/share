@@ -11,6 +11,9 @@ const containers = require("containers");
 const Multimap = containers.Multimap;
 const PiBase = containers.PiBase;
 
+const debug = require("debug");
+const logSetup = debug('dataowner-setup');
+
 var party = process.argv[2]
 var cmd = process.argv[3]
 var party_num = process.argv[4]
@@ -206,6 +209,7 @@ async function setup_dataowner() {
      * command line.
      */
     const [columnNames, records] = readFile()
+    logSetup("Read %d records.", records.length)
 
     /**
      * Some unfinished code related to AHE sums computed using
@@ -217,14 +221,13 @@ async function setup_dataowner() {
     )
     const hexPublicKey = publicKeyRequest.data
 
-    var bigIntPublicKey = {
+    const bigIntPublicKey = {
         "n": bigintConversion.hexToBigint(hexPublicKey.n),
         "g": bigintConversion.hexToBigint(hexPublicKey.g),
     }
 
-    var analystPublicKey = new paillierBigint.PublicKey(bigIntPublicKey.n, bigIntPublicKey.g)
-
-    var encryptedSums = paillierProcess(records, analystPublicKey);
+    const analystPublicKey = new paillierBigint.PublicKey(bigIntPublicKey.n, bigIntPublicKey.g)
+    const encryptedSums = paillierProcess(records, analystPublicKey);
 
     // SEND KEYS TO SERVER!!!!
     axios.post(SERVER_ADDR + '/postEncryptedDataKeys', {
@@ -236,28 +239,29 @@ async function setup_dataowner() {
 
     /**
      * Compute linking tags via the OPRF.
-     */
-    console.log("sending to oprf")
-
-    /**
+     *
      * We assume that the returned pids are in the same order as
      * the input records; that is, that the pids have a 1:1
      * correspondence to the record that they're associated with.
      */
+    logSetup("Requesting linking tags from the OPRF server...")
     const oprfRequest = await axios.post(
         OPRF_ADDR + '/oprf',
         { "input": JSON.stringify(records) }
     )
     const pids = oprfRequest.data
+    logSetup("Received %d linking tags.", pids.length)
 
     /**
      * We generate the recordIds for each record here before the
      * zip so that we can zip together the PIDs and the RIDs
      * with their associated records easily in the following line.
      */
+    logSetup("Generating record IDs...")
     const recordIds = records.map(function(_, _) {
         return simplecrypto.secureRandom(32).toString()
     })
+    logSetup("Generated %d record IDs.", recordIds.length)
 
     /**
      * This associates each record with its associated PID and RID.
@@ -275,6 +279,7 @@ async function setup_dataowner() {
     /**
      * Set up the record IDs for each record in DX^data and DX^link.
      */
+    logSetup("Adding record IDs and tags to DX^data and DX^link...")
     for (const [linkTag, recordId, record] of recordsWithIdsAndTags) {
         dxData.set(recordId, record)
         dxLink.set(recordId, linkTag)
@@ -287,6 +292,7 @@ async function setup_dataowner() {
      * not the PiBase instantiation is response-revealing (true) or
      * response-hiding (false).
      */
+    logSetup("Encrypting DX^data and DX^link...")
     const edxData = new PiBase(false)
     const keyData = edxData.setup(dxData)
 
@@ -296,6 +302,7 @@ async function setup_dataowner() {
     /**
      * Set up MM^filter.
      */
+    logSetup("Setting up MM^filter...")
     for (const [linkTag, recordId, record] of recordsWithIdsAndTags) {
         const tkData = PiBase.token(keyData, recordId, false)
         const tkLink = PiBase.token(keyData, recordId, true)
@@ -316,8 +323,12 @@ async function setup_dataowner() {
 
     /**
      * Convert MM^filter into an encrypted multimap.
+     *
+     * We set the PiBase constructor argument to true to denote that this is a
+     * response-revealing multimap.
      */
-    const emmFilter = new PiBase(false)
+    logSetup("Encrypting MM^filter...")
+    const emmFilter = new PiBase(true)
     const keyFilter = emmFilter.setup(mmFilter)
 
     // TODO(zespirit): Missing PKE encryption here.

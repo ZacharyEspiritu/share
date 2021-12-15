@@ -20,5 +20,8 @@
     "paillier-bigint": "^3.2.5",
     "path": "^0.12.7",
     "simplecrypto": "file:simplecrypto"
+  },
+  "devDependencies": {
+    "debug": "^4.3.3"
   }
 }

@@ -27,7 +27,7 @@ export default class PiBase<K, V> {
      * calling PiBase instance.
      */
     toJson(): string {
-        return JSON.stringify(this.entries)
+        return JSON.stringify(this)
     }
 
     /**

@@ -87,7 +87,7 @@ describe('Multimap.delete', () => {
 
     it('should return true and delete the whole key if only the key is specified', async () => {
         expect(multimap.delete("key")).toBe(true)
-        expect(multimap.get("key")).toBeUndefined()
+        expect(multimap.get("key")).toEqual([])
     })
 
     it('should return false if the entry was previously deleted', async () => {
