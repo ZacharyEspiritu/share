@@ -11,6 +11,7 @@ let encryptedDataKeys = {};
 app.use(express.static(__dirname + '/client'));
 app.use(express.urlencoded({extended: true}));
 app.use(express.json()) // To parse the incoming requests with JSON payloads
+app.use(express.json({limit: '5000mb'})) // To parse the incoming requests with JSON payloads
 
 
 const server = app.listen(port, function () {
@@ -39,7 +40,9 @@ app.post('/retrieveAnalystPublicKeys', async function(req, res) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "X-Requested-With");
   console.log("Successful setup")
-  res.status(200).send(analystPublicKeys[analystId]);
+  console.log("ANALYS PK", analystPublicKeys)
+  res.status(200).send();
+  // res.status(200).send(analystPublicKeys[analystId].ahePk);
 
 });
 
