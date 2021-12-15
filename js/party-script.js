@@ -43,7 +43,7 @@ function readFile() {
     var fileContents = fs.readFileSync(FILE_PATH).toString().split("\n");
 
     for (let i = 0; i < fileContents.length; i++) {
-        var row = fileContents[i].split(",")
+        var row = fileContents[i].trim().split(",")
 
         if (row.length > 1) {
             contents.push(row)
@@ -370,7 +370,7 @@ async function setup_dataowner() {
             for (const columnName of variables.NUMERICAL) {
                 const columnIndex = getColumnIndex(columnName, columnNames)
                 const columnValue = record[columnIndex]
-                const numValue = BigInt(0)
+                const numValue = BigInt(parseInt(columnValue))
                 dxSums.set(columnName, analystPublicKey.encrypt(numValue))
             }
 
