@@ -35,6 +35,8 @@ const OPRF_ADDR = "http://localhost:8082"
 const VARIABLE_THRESHOLD = 3;
 const LEVELS = 9
 
+let analystSecretKeys = {}
+
 function readFile() {
     const contents = []
     const FILE_PATH = "../scripts/test_data/" + party_num + ".csv"
@@ -64,14 +66,18 @@ function init_analyst() {
             "g": bigintConversion.bigintToHex(analystKey.publicKey.g)
         }
 
-        axios.post(SERVER_ADDR + '/postAnalystPublicKey', {
+        var keypair = simplecrypto.pkeKeyGen()
+
+        analystSecretKeys = {"aheSk": analystKey.privateKey, "sk": keypair.privateKey}
+
+        axios.post(SERVER_ADDR + '/postAnalystPublicKeys', {
             "analystId": "analyst",
-            "publicKey": JSON.stringify(hexPublicKey)
+            "ahePk": JSON.stringify(hexPublicKey),
+            "pk": keypair.publicKey
+
         }).then((res) => {
             // console.log(res.data)
         });
-
-        analystPrivateKey = analystKey.privateKey
     });
 }
 
@@ -120,7 +126,6 @@ function paillierProcess(processedFile, analystPublicKey) {
     }
 
     return encryptedSums
-    // console.log("privatekey", analystPrivateKey)
     // for (let i in encryptedSums) {
 
         // console.log(analystPrivateKey.decrypt(encryptedSums[i]))
@@ -203,14 +208,14 @@ function zip(arrays) {
         return arrays.map(function(array){return array[i]})
     });
 }
-        // SEND DATA TO SERVER
-        axios.post(SERVER_ADDR + '/postSetup', {
-            "dataOwnerId": party_num.toString(),
-            "encryptedDataKeys": JSON.stringify({"structure": "some hex values!"}),
-            "encryptedDataStructures": JSON.stringify({"EMM": "todo"});
-        }).then((res) => {
-            console.log(res.data)
-        });
+        // // SEND DATA TO SERVER
+        // axios.post(SERVER_ADDR + '/postSetup', {
+        //     "dataOwnerId": party_num.toString(),
+        //     "encryptedDataKeys": JSON.stringify({"structure": "some hex values!"}),
+        //     "encryptedDataStructures": JSON.stringify({"EMM": "todo"})
+        // }).then((res) => {
+        //     console.log(res.data)
+        // });
 
 async function setup_dataowner() {
     /**
@@ -230,7 +235,8 @@ async function setup_dataowner() {
         SERVER_ADDR + '/retrieveAnalystPublicKey',
         { "analystId": "analyst" }
     )
-    const hexPublicKey = publicKeyRequest.data
+    const hexPublicKey = publicKeyRequest.data.paillerPk
+    const analystPk = publicKeyRequest.data.pk
 
     const bigIntPublicKey = {
         n: bigintConversion.hexToBigint(hexPublicKey.n),
@@ -240,14 +246,6 @@ async function setup_dataowner() {
 
     const encryptedSums = paillierProcess(records, analystPublicKey);
 
-    // SEND KEYS TO SERVER!!!!
-    axios.post(SERVER_ADDR + '/postSetup', {
-        "dataOwnerId": party_num.toString(),
-        "encryptedDataKeys": JSON.stringify({"structure": "some hex values!"}),
-        "encryptedDataStructures": JSON.stringify({"EMM": "todo"});
-    }).then((res) => {
-        console.log(res.data)
-    });
 
     /**
      * Compute linking tags via the OPRF.
@@ -354,7 +352,6 @@ async function setup_dataowner() {
      * Serialize the encrypted structures.
      */
     const eds = { edxData, edxLink, emmFilter }
-    const serializedEds = JSON.stringify(eds)
 
     // TODO(zespirit): Missing PKE encryption here.
     // TODO(zespirit): Send serializedEds to the server here.
@@ -408,18 +405,17 @@ async function setup_dataowner() {
     }
     console.log("Initialized all hash tables.")
 
-    for (let record of records) {
-        for (var col in columnNames) {
-            var x = columnNames[col]
-            if (x in variables.INDEPENDENT) {
-                // do something
-            }
 
-            if (x in variables.DEPENDENT) {
-                // do something
-            }
-        }
-    }
+    // SEND KEYS TO SERVER!!!!
+    axios.post(SERVER_ADDR + '/postSetup', {
+        "dataOwnerId": party_num.toString(),
+        "encryptedDataKeys": JSON.stringify({"structure": "some hex values!"}),
+        "encryptedDataStructures": JSON.stringify(eds)
+    }).then((res) => {
+        console.log(res.data)
+    });
+
+
 }
 
 if (party == DATAOWNER) {

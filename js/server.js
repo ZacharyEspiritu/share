@@ -23,15 +23,16 @@ app.get('/', async function(req,res){
   res.sendFile((path.join(__dirname + '/client/index.html')));
 });
 
-app.post('/postAnalystPublicKey', async function(req, res) {
-  var analystPublicKey = req.body.publicKey;
+app.post('/postAnalystPublicKeys', async function(req, res) {
+  var ahePk = req.body.ahePk;
+  var pk = req.body.pk;
   var analystId = req.body.analystId;
-  analystPublicKeys[analystId] = analystPublicKey;
-  console.log("Storing analyst public key: ", analystId, analystPublicKey);
+  analystPublicKeys[analystId] = {"ahePk": ahePk, "pk": pk};
+  console.log("Storing analyst public key: ", analystId, analystPublicKeys);
   res.status(200).send("Success: storing analyst public key");
 });
 
-app.post('/retrieveAnalystPublicKey', async function(req, res) {
+app.post('/retrieveAnalystPublicKeys', async function(req, res) {
   var analystId = req.body.analystId;
 
   console.log("Retrieving analyst public key", analystId)
@@ -41,7 +42,6 @@ app.post('/retrieveAnalystPublicKey', async function(req, res) {
   res.status(200).send(analystPublicKeys[analystId]);
 
 });
-
 
 app.post('/postSetup', async function(req, res) {
   let dataOwnerId = req.body.dataOwnerId;
