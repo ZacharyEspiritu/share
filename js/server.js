@@ -2,7 +2,7 @@ const express = require('express');
 const app = express();
 const port = 8083;
 const path = require('path');
-
+const jsgraphs = require('js-graph-algorithms');
 
 let analystPublicKeys = {};
 let encryptedDataKeys = {};
@@ -43,13 +43,17 @@ app.post('/retrieveAnalystPublicKey', async function(req, res) {
 });
 
 
-app.post('/postEncryptedDataKeys', async function(req, res) {
+app.post('/postSetup', async function(req, res) {
   let dataOwnerId = req.body.dataOwnerId;
   encryptedDataKeys[dataOwnerId] = req.body.encryptedDataKeys; 
+  encryptedDataStructures[dataOwnerId] = req.body.encryptedDataStructures;
+
+  // hash tables go in here too??
 
   console.log("Storing encrypted data keys ");
   res.status(200).send("Success: storing keys for dataowner: " + dataOwnerId, 200);
 });
+
 
 app.post('/retrieveAnalystPublicKey', async function(req, res) {
   var dataOwnerId = req.body.dataOwnerId;
@@ -75,3 +79,8 @@ app.post('/setup', async function(req,res) {
   console.log("Successful setup")
   res.status(200).send(JSON.stringify("Success"));
 });
+
+
+function link() {
+  var g = new jsgraphs.Graph(6);
+}
