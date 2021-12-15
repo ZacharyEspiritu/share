@@ -4,14 +4,14 @@ const simplecrypto_1 = require("simplecrypto");
 /**
  * Simple implementation of \Pi_{bas}.
  *
- * By default, \Pi_{bas} is response-hiding. Set isResponseRevealing = true to
- * have response-revealing properties.
+ * By default, \Pi_{bas} is response-revealing. Set isResponseRevealing = false
+ * to have response-hiding properties.
  */
 class PiBase {
     /**
      * Initializer for the PiBase scheme.
      */
-    constructor(isResponseRevealing = false) {
+    constructor(isResponseRevealing = true) {
         this.isResponseRevealing = isResponseRevealing;
         this.entries = new Map();
     }
@@ -56,7 +56,7 @@ class PiBase {
      * Computes a PiBase search token over the given secret key and
      * keyword.
      */
-    static token(key, keyword, isResponseRevealing = false) {
+    static token(key, keyword, isResponseRevealing = true) {
         const labelKey = (0, simplecrypto_1.hkdf)(key, keyword + "label");
         if (isResponseRevealing) {
             const valueKey = (0, simplecrypto_1.hkdf)(key, keyword + "value");

@@ -13,8 +13,6 @@ class Multimap {
     constructor(iterable) {
         this.map = new Map();
         if (iterable) {
-            // We want to have a reference to the same `this` in the closure, so
-            // we use this `self` variable to maintain the reference.
             for (const i of iterable) {
                 this.map.set(i[0], i[1]);
             }

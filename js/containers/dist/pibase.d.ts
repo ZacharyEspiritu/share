@@ -4,8 +4,8 @@ import { Ciphertext } from "simplecrypto";
 /**
  * Simple implementation of \Pi_{bas}.
  *
- * By default, \Pi_{bas} is response-hiding. Set isResponseRevealing = true to
- * have response-revealing properties.
+ * By default, \Pi_{bas} is response-revealing. Set isResponseRevealing = false
+ * to have response-hiding properties.
  */
 export default class PiBase<K, V> {
     isResponseRevealing: boolean;

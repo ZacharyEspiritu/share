@@ -7,8 +7,8 @@ import { hmac, hkdf, secureRandom, symmetricEncrypt, symmetricDecrypt, Ciphertex
 /**
  * Simple implementation of \Pi_{bas}.
  *
- * By default, \Pi_{bas} is response-hiding. Set isResponseRevealing = true to
- * have response-revealing properties.
+ * By default, \Pi_{bas} is response-revealing. Set isResponseRevealing = false
+ * to have response-hiding properties.
  */
 export default class PiBase<K, V> {
     isResponseRevealing: boolean
@@ -17,7 +17,7 @@ export default class PiBase<K, V> {
     /**
      * Initializer for the PiBase scheme.
      */
-    constructor(isResponseRevealing: boolean = false) {
+    constructor(isResponseRevealing: boolean = true) {
         this.isResponseRevealing = isResponseRevealing
         this.entries = new Map()
     }
@@ -68,7 +68,7 @@ export default class PiBase<K, V> {
      * Computes a PiBase search token over the given secret key and
      * keyword.
      */
-    static token(key: Buffer, keyword: string, isResponseRevealing: boolean = false): PiBaseSearchToken {
+    static token(key: Buffer, keyword: string, isResponseRevealing: boolean = true): PiBaseSearchToken {
         const labelKey = hkdf(key, keyword + "label")
 
         if (isResponseRevealing) {

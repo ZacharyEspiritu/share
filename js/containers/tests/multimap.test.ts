@@ -1,3 +1,5 @@
+'use strict'
+
 import 'jest'
 import Multimap from '../src/multimap'
 
