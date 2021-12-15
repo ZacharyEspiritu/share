@@ -191,14 +191,6 @@ function zip(arrays) {
         return arrays.map(function(array){return array[i]})
     });
 }
-        // // SEND DATA TO SERVER
-        // axios.post(SERVER_ADDR + '/postSetup', {
-        //     "dataOwnerId": party_num.toString(),
-        //     "encryptedDataKeys": JSON.stringify({"structure": "some hex values!"}),
-        //     "encryptedDataStructures": JSON.stringify({"EMM": "todo"})
-        // }).then((res) => {
-        //     console.log(res.data)
-        // });
 
 async function setup_dataowner() {
     /**
@@ -352,15 +344,15 @@ async function setup_dataowner() {
     const ht1 = new EncryptedHashTable(hashKey, tableSize)
 
     for (const [linkTag, recordId, record] of recordsWithIdsAndTags) {
-        // for (const [index, subTag] of linkTag.entries()) {
-        //     const dxSums = new Map()
-        //     // TODO(zespirit): We only want to iterate over columns in X^nums.
-        //     for (const columnName of columnNames) {
-        //         const columnIndex = getColumnIndex(columnName, columnNames)
-        //         const columnValue = record[columnIndex]
-        //         dxSums.set(columnName, analystPublicKey.encrypt())
-        //     }
-        // }
+        for (const [index, subTag] of linkTag.entries()) {
+            const dxSums = new Map()
+            // TODO(zespirit): We only want to iterate over columns in X^nums.
+            for (const columnName of columnNames) {
+                const columnIndex = getColumnIndex(columnName, columnNames)
+                const columnValue = record[columnIndex]
+                dxSums.set(columnName, analystPublicKey.encrypt())
+            }
+        }
         dxData.set(recordId, record)
         dxLink.set(recordId, linkTag)
     }
@@ -390,7 +382,7 @@ async function setup_dataowner() {
     console.log("Initialized all hash tables.")
 
 
-    // SEND DATA TO SERVER!!!!
+    // // SEND KEYS TO SERVER!!!!
     // axios.post(SERVER_ADDR + '/postSetup', {
     //     "dataOwnerId": party_num.toString(),
     //     "encryptedDataKeys": JSON.stringify({"structure": "some hex values!"}),
