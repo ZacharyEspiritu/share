@@ -30,6 +30,10 @@ export default class Multimap<K, V> {
         }
     }
 
+    /**
+     * Returns a JSON blob representing the serialized form of the
+     * calling Multimap instance.
+     */
     toJSON(): string {
         return JSON.stringify(this.map)
     }

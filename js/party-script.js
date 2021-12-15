@@ -59,7 +59,7 @@ function readFile() {
 
 function init_analyst() {
 
-    paillierBigint.generateRandomKeys(3072).then((analystKey) => {
+    paillierBigint.generateRandomKeys(2048).then((analystKey) => {
 
         var hexPublicKey = {
             "n": bigintConversion.bigintToHex(analystKey.publicKey.n),
@@ -343,35 +343,43 @@ async function setup_dataowner() {
 
     // TODO(zespirit): Retrieve previous HTs from server.
 
-    // // Initialize a hash function:
-    // logSetup("Initializing hash functions...")
-    // const tableSize = BigInt(linkingTags.length * linkingTags.length)
-    // const zippedTags = zip(linkingTags)
-    // let hashKey = undefined;
-    // for (const [linkingLevel, levelTags] of zippedTags.entries()) {
-    //     hashKey = EncryptedHashTable.pickHashKeyWithNoCollisions(levelTags, tableSize)
-    //     console.log("Found hash key for level", linkingLevel, ":", hashKey)
-    // }
-    // logSetup("Done initializing hash keys.")
+
+    // Initialize a hash function:
+    logSetup("Initializing hash functions...")
+    const tableSize = BigInt(linkingTags.length * linkingTags.length)
+    const zippedTags = zip(linkingTags)
+    const hashKeysPerLevel = new Map();
+    for (const [linkingLevel, levelTags] of zippedTags.entries()) {
+        const hashKey = EncryptedHashTable.pickHashKeyWithNoCollisions(levelTags, tableSize)
+        console.log("Found hash key for level", linkingLevel, ":", hashKey)
+        hashKeysPerLevel.set(linkingLevel, hashKey)
+    }
+    logSetup("Done initializing hash keys.")
 
 
-    // // Initialize all of the necesary hash tables.
-    // const ht1 = new EncryptedHashTable(hashKey, tableSize)
+    // Initialize all of the necesary hash tables.
+    const hashTables = new Map()
 
-    // for (const [linkTag, recordId, record] of recordsWithIdsAndTags) {
-    //     // for (const [index, subTag] of linkTag.entries()) {
-    //     //     const dxSums = new Map()
-    //     //     // TODO(zespirit): We only want to iterate over columns in X^nums.
-    //     //     for (const columnName of columnNames) {
-    //     //         const columnIndex = getColumnIndex(columnName, columnNames)
-    //     //         const columnValue = record[columnIndex]
-    //     //         dxSums.set(columnName, analystPublicKey.encrypt())
-    //     //     }
-    //     // }
-    //     // dxData.set(recordId, record)
-    //     // dxLink.set(recordId, linkTag)
-    // }
-    // logSetup("Done initializing hash tables.")
+    const selfHashTable = new Map()
+    hashTables.set(party_num, selfHashTable)
+
+    for (const [linkTag, recordId, record] of recordsWithIdsAndTags) {
+        for (const [linkingLevel, subTag] of linkTag.entries()) {
+            const dxSums = new Map()
+            // TODO(zespirit): We only want to iterate over columns in X^nums.
+            for (const columnName of columnNames) {
+                const columnIndex = getColumnIndex(columnName, columnNames)
+                const columnValue = record[columnIndex]
+                const numValue = BigInt(0)
+                dxSums.set(columnName, analystPublicKey.encrypt(numValue))
+            }
+
+            const hashKey = hashKeysPerLevel.get(linkingLevel)
+            const hashTable = new EncryptedHashTable(hashKey, tableSize)
+            hashTables.get(party_num).set(linkingLevel, dxSums)
+        }
+    }
+    logSetup("Done initializing hash tables.")
 
 
     // // // setup HT starts here?
