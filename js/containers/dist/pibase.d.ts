@@ -9,7 +9,7 @@ import { Ciphertext } from "simplecrypto";
  */
 export default class PiBase<K, V> {
     isResponseRevealing: boolean;
-    entries: Map<Buffer, Ciphertext>;
+    entries: Map<string, Ciphertext>;
     /**
      * Initializer for the PiBase scheme.
      */

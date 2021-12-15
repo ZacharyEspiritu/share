@@ -12,7 +12,7 @@ import { hmac, hkdf, secureRandom, symmetricEncrypt, symmetricDecrypt, Ciphertex
  */
 export default class PiBase<K, V> {
     isResponseRevealing: boolean
-    entries: Map<Buffer, Ciphertext>
+    entries: Map<string, Ciphertext>
 
     /**
      * Initializer for the PiBase scheme.
@@ -54,10 +54,12 @@ export default class PiBase<K, V> {
             let counter = 0
 
             for (const value of multimap.get(keyword) ?? []) {
-                const encryptedLabel = hmac(labelKey, counter.toString())
+                const encryptedLabel = hmac(labelKey, counter.toString()).toString()
                 const encryptedValue = symmetricEncrypt(valueKey, JSON.stringify(value))
+                console.log(counter, encryptedLabel, encryptedValue)
                 counter += 1
                 this.entries.set(encryptedLabel, encryptedValue)
+                console.log(this.entries.get(encryptedLabel))
             }
         }
 
@@ -91,12 +93,14 @@ export default class PiBase<K, V> {
     query(searchToken: PiBaseSearchToken): Set<string|Ciphertext> {
         const result = new Set<string|Ciphertext>()
         let counter = 0
+        console.log(this.entries)
         while (true) {
-            const encryptedLabel = hmac(searchToken.labelKey, counter.toString())
+            const encryptedLabel = hmac(searchToken.labelKey, counter.toString()).toString()
             const encryptedValue = this.entries.get(encryptedLabel)
+            console.log(counter, encryptedLabel, encryptedValue)
             if (encryptedValue) {
                 if (this.isResponseRevealing && searchToken.valueKey) {
-                    const plaintextValue = symmetricDecrypt(searchToken.valueKey, encryptedValue)
+                    const plaintextValue = JSON.parse(symmetricDecrypt(searchToken.valueKey, encryptedValue))
                     result.add((plaintextValue as string))
                 } else {
                     result.add((encryptedValue as Ciphertext))

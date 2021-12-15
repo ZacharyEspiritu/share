@@ -215,7 +215,11 @@ function setup_dataowner() {
         const emmFilter = new PiBase(true);
         const emmFilterKey = emmFilter.setup(mmFilter)
         console.log(emmFilter);
-        console.log(emmFilter.query(PiBase.token(emmFilterKey, "a", true)))
+
+        console.log("Querying EMM...")
+        const token = PiBase.token(emmFilterKey, "a", true);
+        console.log(token);
+        console.log(emmFilter.query(token))
 
         var hexPublicKey = res.data
 
