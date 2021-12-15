@@ -30,7 +30,7 @@ export default class Multimap<K, V> {
         }
     }
 
-    toJson(): string {
+    toJSON(): string {
         return JSON.stringify(this.map)
     }
 

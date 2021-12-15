@@ -32,7 +32,7 @@ class Multimap {
             }
         }
     }
-    toJson() {
+    toJSON() {
         return JSON.stringify(this.map);
     }
     /**

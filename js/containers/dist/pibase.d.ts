@@ -18,12 +18,12 @@ export default class PiBase<K, V> {
      * Returns a JSON blob representing the serialized form of the
      * calling PiBase instance.
      */
-    toJson(): string;
+    toJSON(): string;
     /**
      * Converts the given JSON blob (representing a PiBase instance that
-     * was previously serialized with .toJson) into a PiBase instance.
+     * was previously serialized with .toJSON) into a PiBase instance.
      */
-    static fromJson<L, W>(json: string): PiBase<L, W>;
+    static fromJSON<L, W>(json: string): PiBase<L, W>;
     /**
      * Encrypts the given multimap instance using the PiBase scheme and
      * stores the encrypted result in the calling PiBase instance.

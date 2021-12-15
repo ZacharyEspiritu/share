@@ -26,7 +26,7 @@ export default class PiBase<K, V> {
      * Returns a JSON blob representing the serialized form of the
      * calling PiBase instance.
      */
-    toJson(): string {
+    toJSON(): string {
         return JSON.stringify({
             isResponseRevealing: this.isResponseRevealing,
             entries: [...this.entries],
@@ -35,9 +35,9 @@ export default class PiBase<K, V> {
 
     /**
      * Converts the given JSON blob (representing a PiBase instance that
-     * was previously serialized with .toJson) into a PiBase instance.
+     * was previously serialized with .toJSON) into a PiBase instance.
      */
-    static fromJson<L, W>(json: string): PiBase<L, W> {
+    static fromJSON<L, W>(json: string): PiBase<L, W> {
         const parsedJson = JSON.parse(json)
         return Object.assign(new PiBase(), {
             isResponseRevealing: parsedJson.isResponseRevealing,

@@ -19,7 +19,7 @@ class PiBase {
      * Returns a JSON blob representing the serialized form of the
      * calling PiBase instance.
      */
-    toJson() {
+    toJSON() {
         return JSON.stringify({
             isResponseRevealing: this.isResponseRevealing,
             entries: [...this.entries],
@@ -27,9 +27,9 @@ class PiBase {
     }
     /**
      * Converts the given JSON blob (representing a PiBase instance that
-     * was previously serialized with .toJson) into a PiBase instance.
+     * was previously serialized with .toJSON) into a PiBase instance.
      */
-    static fromJson(json) {
+    static fromJSON(json) {
         const parsedJson = JSON.parse(json);
         return Object.assign(new PiBase(), {
             isResponseRevealing: parsedJson.isResponseRevealing,

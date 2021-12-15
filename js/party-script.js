@@ -336,7 +336,6 @@ async function setup_dataowner() {
      */
     const eds = { edxData, edxLink, emmFilter }
     const serializedEds = JSON.stringify(eds)
-    console.log(serializedEds)
 
     // TODO(zespirit): Missing PKE encryption here.
 
