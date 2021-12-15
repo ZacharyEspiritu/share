@@ -200,164 +200,164 @@ function zip(arrays) {
     });
 }
 
-function setup_dataowner() {
-    axios.post(SERVER_ADDR + '/retrieveAnalystPublicKey', {
-        "analystId": "analyst",
+async function setup_dataowner() {
+    /**
+     * Read the data owner's record from the specified CSV on the
+     * command line.
+     */
+    const [columnNames, records] = readFile()
+
+    /**
+     * Some unfinished code related to AHE sums computed using
+     * the server's public key.
+     */
+    const publicKeyRequest = await axios.post(
+        SERVER_ADDR + '/retrieveAnalystPublicKey',
+        { "analystId": "analyst" }
+    )
+    const hexPublicKey = publicKeyRequest.data
+
+    var bigIntPublicKey = {
+        "n": bigintConversion.hexToBigint(hexPublicKey.n),
+        "g": bigintConversion.hexToBigint(hexPublicKey.g),
+    }
+
+    var analystPublicKey = new paillierBigint.PublicKey(bigIntPublicKey.n, bigIntPublicKey.g)
+
+    var encryptedSums = paillierProcess(records, analystPublicKey);
+
+    // SEND KEYS TO SERVER!!!!
+    axios.post(SERVER_ADDR + '/postEncryptedDataKeys', {
+        "dataOwnerId": party_num.toString(),
+        "encryptedDataKeys": JSON.stringify({"structure": "some hex values!"})
     }).then((res) => {
-        /**
-         * Read the data owner's record from the specified CSV on the
-         * command line.
-         */
-        const [columnNames, records] = readFile()
-
-        /**
-         * Some unfinished code related to AHE sums computed using
-         * the server's public key.
-         */
-        var hexPublicKey = res.data
-
-        var bigIntPublicKey = {
-            "n": bigintConversion.hexToBigint(hexPublicKey.n),
-            "g": bigintConversion.hexToBigint(hexPublicKey.g),
-        }
-
-        var analystPublicKey = new paillierBigint.PublicKey(bigIntPublicKey.n, bigIntPublicKey.g)
-
-        var encryptedSums = paillierProcess(records, analystPublicKey);
-
-        // SEND KEYS TO SERVER!!!!
-        axios.post(SERVER_ADDR + '/postEncryptedDataKeys', {
-            "dataOwnerId": party_num.toString(),
-            "encryptedDataKeys": JSON.stringify({"structure": "some hex values!"})
-        }).then((res) => {
-            console.log(res.data)
-        });
-
-        /**
-         * Compute linking tags via the OPRF.
-         */
-        console.log("sending to oprf")
-        axios.post(OPRF_ADDR + '/oprf', {
-            "input": JSON.stringify(records),
-        }).then((res) => {
-            /**
-             * We assume that the returned pids are in the same order as
-             * the input records; that is, that the pids have a 1:1
-             * correspondence to the record that they're associated with.
-             */
-            const pids = res.data;
-
-            /**
-             * We generate the recordIds for each record here before the
-             * zip so that we can zip together the PIDs and the RIDs
-             * with their associated records easily in the following line.
-             */
-            const recordIds = records.map(function(_, _) {
-                return simplecrypto.secureRandom(32).toString()
-            })
-
-            /**
-             * This associates each record with its associated PID and RID.
-             */
-            const recordsWithIdsAndTags = zip([pids, recordIds, records])
-
-            /**
-             * Initialize plaintext versions of the multimap and dictionary
-             * structures to be converted to the encrypted data structure.
-             */
-            const mmFilter = new Multimap()
-            const dxData = new Map()
-            const dxLink = new Map()
-
-            /**
-             * Set up the record IDs for each record in DX^data and DX^link.
-             */
-            for (const [linkTag, recordId, record] of recordsWithIdsAndTags) {
-                dxData.set(recordId, record)
-                dxLink.set(recordId, linkTag)
-                console.log(linkTag, recordId, record)
-            }
-
-            /**
-             * Convert DX^data and DX^link into encrypted structures.
-             *
-             * The PiBase constructor consumes a boolean denoting whether or
-             * not the PiBase instantiation is response-revealing (true) or
-             * response-hiding (false).
-             */
-            const edxData = new PiBase(false)
-            const keyData = edxData.setup(dxData)
-
-            const edxLink = new PiBase(true)
-            const keyLink = edxLink.setup(dxLink)
-
-            /**
-             * Set up MM^filter.
-             */
-            for (const [linkTag, recordId, record] of recordsWithIdsAndTags) {
-                const tkData = PiBase.token(keyData, recordId, false)
-                const tkLink = PiBase.token(keyData, recordId, true)
-
-                // TODO(zespirit): We only want to iterate over columns in
-                //                 X^filter. This currently just iterates over
-                //                 every column.
-                for (const columnName of columnNames) {
-                    const columnIndex = getColumnIndex(columnName, columnNames)
-                    const columnValue = record[columnIndex]
-
-                    // We need to convert the MM^filter label to a string since
-                    // Map.get (which Multimap.get is implemented with) works off of
-                    // object identity, not equality.
-                    mmFilter.set(String({ columnName, columnValue }), { tkData, tkLink })
-                }
-            }
-
-            /**
-             * Convert MM^filter into an encrypted multimap.
-             */
-            const emmFilter = new PiBase(false)
-            const keyFilter = emmFilter.setup(mmFilter)
-
-            // TODO(zespirit): Missing PKE encryption here.
-
-            // setup HT starts here?
-            const numPreviousParties = 3; // TODO(zespirit): Do this better
-
-            // Initialize a hash function:
-            const tableSize = BigInt(pids.length * pids.length)
-            const hashKey = EncryptedHashTable.pickHashKeyWithNoCollisions(pids, tableSize)
-            console.log("Found hash key:", hashKey)
-
-            // Initialize all of the necesary hash tables.
-            const ht1 = new EncryptedHashTable(hashKey, tableSize)
-
-            const ht2s = new Array(numPreviousParties) // HT using 2 columns
-            const ht3s = new Array(numPreviousParties) // HT using 3 columns
-            for (let j = 0; j < numPreviousParties; j++) {
-                ht2s[j] = new EncryptedHashTable(hashKey, tableSize)
-
-                const ht3k = new Array(numPreviousParties)
-                for (let k = 0; k < numPreviousParties; k++) {
-                    ht3k[k] = new EncryptedHashTable(hashKey, tableSize)
-                }
-                ht3s[j] = ht3k
-            }
-            console.log("Initialized all hash tables.")
-
-            for (let record of records) {
-                for (var col in columnNames) {
-                    var x = columnNames[col]
-                    if (x in variables.INDEPENDENT) {
-                        // do something
-                    }
-
-                    if (x in variables.DEPENDENT) {
-                        // do something
-                    }
-                }
-            }
-        });
+        console.log("keys!!", res.data)
     });
+
+    /**
+     * Compute linking tags via the OPRF.
+     */
+    console.log("sending to oprf")
+
+    /**
+     * We assume that the returned pids are in the same order as
+     * the input records; that is, that the pids have a 1:1
+     * correspondence to the record that they're associated with.
+     */
+    const oprfRequest = await axios.post(
+        OPRF_ADDR + '/oprf',
+        { "input": JSON.stringify(records) }
+    )
+    const pids = oprfRequest.data
+
+    /**
+     * We generate the recordIds for each record here before the
+     * zip so that we can zip together the PIDs and the RIDs
+     * with their associated records easily in the following line.
+     */
+    const recordIds = records.map(function(_, _) {
+        return simplecrypto.secureRandom(32).toString()
+    })
+
+    /**
+     * This associates each record with its associated PID and RID.
+     */
+    const recordsWithIdsAndTags = zip([pids, recordIds, records])
+
+    /**
+     * Initialize plaintext versions of the multimap and dictionary
+     * structures to be converted to the encrypted data structure.
+     */
+    const mmFilter = new Multimap()
+    const dxData = new Map()
+    const dxLink = new Map()
+
+    /**
+     * Set up the record IDs for each record in DX^data and DX^link.
+     */
+    for (const [linkTag, recordId, record] of recordsWithIdsAndTags) {
+        dxData.set(recordId, record)
+        dxLink.set(recordId, linkTag)
+    }
+
+    /**
+     * Convert DX^data and DX^link into encrypted structures.
+     *
+     * The PiBase constructor consumes a boolean denoting whether or
+     * not the PiBase instantiation is response-revealing (true) or
+     * response-hiding (false).
+     */
+    const edxData = new PiBase(false)
+    const keyData = edxData.setup(dxData)
+
+    const edxLink = new PiBase(true)
+    const keyLink = edxLink.setup(dxLink)
+
+    /**
+     * Set up MM^filter.
+     */
+    for (const [linkTag, recordId, record] of recordsWithIdsAndTags) {
+        const tkData = PiBase.token(keyData, recordId, false)
+        const tkLink = PiBase.token(keyData, recordId, true)
+
+        // TODO(zespirit): We only want to iterate over columns in
+        //                 X^filter. This currently just iterates over
+        //                 every column.
+        for (const columnName of columnNames) {
+            const columnIndex = getColumnIndex(columnName, columnNames)
+            const columnValue = record[columnIndex]
+
+            // We need to convert the MM^filter label to a string since
+            // Map.get (which Multimap.get is implemented with) works off of
+            // object identity, not equality.
+            mmFilter.set(String({ columnName, columnValue }), { tkData, tkLink })
+        }
+    }
+
+    /**
+     * Convert MM^filter into an encrypted multimap.
+     */
+    const emmFilter = new PiBase(false)
+    const keyFilter = emmFilter.setup(mmFilter)
+
+    // TODO(zespirit): Missing PKE encryption here.
+
+    // setup HT starts here?
+    const numPreviousParties = 3; // TODO(zespirit): Do this better
+
+    // Initialize a hash function:
+    const tableSize = BigInt(pids.length * pids.length)
+    const hashKey = EncryptedHashTable.pickHashKeyWithNoCollisions(pids, tableSize)
+    console.log("Found hash key:", hashKey)
+
+    // Initialize all of the necesary hash tables.
+    const ht1 = new EncryptedHashTable(hashKey, tableSize)
+
+    const ht2s = new Array(numPreviousParties) // HT using 2 columns
+    const ht3s = new Array(numPreviousParties) // HT using 3 columns
+    for (let j = 0; j < numPreviousParties; j++) {
+        ht2s[j] = new EncryptedHashTable(hashKey, tableSize)
+
+        const ht3k = new Array(numPreviousParties)
+        for (let k = 0; k < numPreviousParties; k++) {
+            ht3k[k] = new EncryptedHashTable(hashKey, tableSize)
+        }
+        ht3s[j] = ht3k
+    }
+    console.log("Initialized all hash tables.")
+
+    for (let record of records) {
+        for (var col in columnNames) {
+            var x = columnNames[col]
+            if (x in variables.INDEPENDENT) {
+                // do something
+            }
+
+            if (x in variables.DEPENDENT) {
+                // do something
+            }
+        }
+    }
 }
 
 if (party == DATAOWNER) {
