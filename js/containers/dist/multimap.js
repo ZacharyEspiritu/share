@@ -32,6 +32,9 @@ class Multimap {
             }
         }
     }
+    toJson() {
+        return JSON.stringify(this.map);
+    }
     /**
      * Retrieves the entries associated with the given key in the Multimap as
      * an Array of values.

@@ -27,7 +27,10 @@ export default class PiBase<K, V> {
      * calling PiBase instance.
      */
     toJson(): string {
-        return JSON.stringify(this)
+        return JSON.stringify({
+            isResponseRevealing: this.isResponseRevealing,
+            entries: [...this.entries],
+        })
     }
 
     /**
@@ -35,7 +38,11 @@ export default class PiBase<K, V> {
      * was previously serialized with .toJson) into a PiBase instance.
      */
     static fromJson<L, W>(json: string): PiBase<L, W> {
-        return Object.assign(new PiBase(), JSON.parse(json))
+        const parsedJson = JSON.parse(json)
+        return Object.assign(new PiBase(), {
+            isResponseRevealing: parsedJson.isResponseRevealing,
+            entries: new Map(parsedJson.entries),
+        })
     }
 
     /**

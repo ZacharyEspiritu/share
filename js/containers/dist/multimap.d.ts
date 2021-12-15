@@ -19,6 +19,7 @@ export default class Multimap<K, V> {
      * Multimap with the given (key, values) tuples.
      */
     constructor(iterable?: Iterable<[K, Array<V>]>);
+    toJson(): string;
     /**
      * Retrieves the entries associated with the given key in the Multimap as
      * an Array of values.

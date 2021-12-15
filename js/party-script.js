@@ -331,6 +331,13 @@ async function setup_dataowner() {
     const emmFilter = new PiBase(true)
     const keyFilter = emmFilter.setup(mmFilter)
 
+    /**
+     * Serialize the encrypted structures.
+     */
+    const eds = { edxData, edxLink, emmFilter }
+    const serializedEds = JSON.stringify(eds)
+    console.log(serializedEds)
+
     // TODO(zespirit): Missing PKE encryption here.
 
     // setup HT starts here?

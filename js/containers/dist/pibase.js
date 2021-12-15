@@ -20,14 +20,21 @@ class PiBase {
      * calling PiBase instance.
      */
     toJson() {
-        return JSON.stringify(this);
+        return JSON.stringify({
+            isResponseRevealing: this.isResponseRevealing,
+            entries: [...this.entries],
+        });
     }
     /**
      * Converts the given JSON blob (representing a PiBase instance that
      * was previously serialized with .toJson) into a PiBase instance.
      */
     static fromJson(json) {
-        return Object.assign(new PiBase(), JSON.parse(json));
+        const parsedJson = JSON.parse(json);
+        return Object.assign(new PiBase(), {
+            isResponseRevealing: parsedJson.isResponseRevealing,
+            entries: new Map(parsedJson.entries),
+        });
     }
     /**
      * Encrypts the given multimap instance using the PiBase scheme and
