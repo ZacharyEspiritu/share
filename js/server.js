@@ -41,8 +41,7 @@ app.post('/retrieveAnalystPublicKeys', async function(req, res) {
   res.header("Access-Control-Allow-Headers", "X-Requested-With");
   console.log("Successful setup")
   console.log("ANALYS PK", analystPublicKeys)
-  res.status(200).send();
-  // res.status(200).send(analystPublicKeys[analystId].ahePk);
+  res.status(200).send(analystPublicKeys[analystId]);
 
 });
 

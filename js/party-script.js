@@ -217,18 +217,18 @@ async function setup_dataowner() {
         { "analystId": "analyst" }
     )
 
-    // console.log(publicKeyRequest.data.pk)
 
-    // const hexPublicKey = publicKeyRequest.data.ahePk
-    // const analystPk = publicKeyRequest.data.pk
+    const hexPublicKey = JSON.parse(publicKeyRequest.data.ahePk)
+    const analystPk = publicKeyRequest.data.pk
 
-    // const bigIntPublicKey = {
-    //     n: bigintConversion.hexToBigint(hexPublicKey.n),
-    //     g: bigintConversion.hexToBigint(hexPublicKey.g),
-    // }
-    // const analystPublicKey = new paillierBigint.PublicKey(bigIntPublicKey.n, bigIntPublicKey.g)
+    const bigIntPublicKey = {
+        n: bigintConversion.hexToBigint(hexPublicKey.n),
+        g: bigintConversion.hexToBigint(hexPublicKey.g),
+    }
 
-    // const encryptedSums = paillierProcess(records, analystPublicKey);
+    const analystPublicKey = new paillierBigint.PublicKey(bigIntPublicKey.n, bigIntPublicKey.g)
+
+    const encryptedSums = paillierProcess(records, analystPublicKey);
 
 
     /**
