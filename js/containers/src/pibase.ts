@@ -60,7 +60,7 @@ export default class PiBase<K, V> {
                 this.entries.set(encryptedLabel, encryptedValue)
             }
             else { // (map instanceof Multimap)
-                for (const value of map.get(keyword) ?? []) {
+                for (const value of map.get(keyword)) {
                     const encryptedLabel = hmac(labelKey, counter.toString()).toString()
                     const encryptedValue = symmetricEncrypt(valueKey, JSON.stringify(value))
                     counter += 1
