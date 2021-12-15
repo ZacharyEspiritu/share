@@ -8,11 +8,11 @@ describe('Multimap', () => {
         multimap = new Multimap()
     })
 
-    it('should allow one to instantiate a multimap without an iterable', async () => {
+    it('should be instantiable without an iterable', async () => {
         expect(multimap).toBeInstanceOf(Multimap)
     })
 
-    it('should allow one to instantiate a multimap with an iterable', async () => {
+    it('should be instantiable with an iterable', async () => {
         multimap = new Multimap([
             ["key1", ["value1", "value2"]],
             ["key2", ["value3"]]
@@ -26,8 +26,16 @@ describe('Multimap', () => {
         expect(multimap.get("key2")).toBeDefined()
         expect(multimap.get("key2")).toEqual(["value3"])
     })
+})
 
-    it('should allow one to add multiple keys', async () => {
+describe('Multimap.set and Multimap.get', () => {
+    let multimap: Multimap
+
+    beforeEach(() => {
+        multimap = new Multimap()
+    })
+
+    it('should allow multiple keys', async () => {
         expect(multimap).toBeInstanceOf(Multimap)
 
         multimap.set("a", "0")
@@ -46,31 +54,57 @@ describe('Multimap', () => {
         expect(multimap.get("c")).toBeDefined()
         expect(multimap.get("c")).toEqual(["4", "5"])
     })
+})
 
-    it('should allow one to delete keys', async () => {
-        expect(multimap).toBeInstanceOf(Multimap)
+describe('Multimap.delete', () => {
+    let multimap: Multimap
 
-        expect(multimap.delete("key")).toBe(false)
-
+    beforeEach(() => {
+        multimap = new Multimap()
         multimap.set("key", "0")
         multimap.set("key", "1")
         multimap.set("key", "2")
 
-        expect(multimap.delete("key", "1")).toBe(true)
-
-        expect(multimap.delete("key", "3")).toBe(false)
-
         expect(multimap.get("key")).toBeDefined()
-        expect(multimap.get("key")).toEqual(["0", "2"])
-
-        expect(multimap.delete("key")).toBe(true)
-
-        expect(multimap.get("key")).toBeUndefined()
-
-        expect(multimap.delete("key")).toBe(false)
+        expect(multimap.get("key")).toEqual(["0", "1", "2"])
     })
 
-    it('should have iterable keys', async () => {
+    it('should return false if the key does not exist in the multimap', async () => {
+        expect(multimap).toBeInstanceOf(Multimap)
+
+        expect(multimap.delete("does not exist")).toBe(false)
+    })
+
+    it('should return true if the input already exists', async () => {
+        expect(multimap.delete("key", "1")).toBe(true)
+    })
+
+    it('should return false if the key exists, but the value does not exist in the multimap', async () => {
+        expect(multimap.delete("key", "3")).toBe(false)
+    })
+
+    it('should return true and delete the whole key if only the key is specified', async () => {
+        expect(multimap.delete("key")).toBe(true)
+        expect(multimap.get("key")).toBeUndefined()
+    })
+
+    it('should return false if the entry was previously deleted', async () => {
+        expect(multimap.delete("key", "1")).toBe(true)
+        expect(multimap.delete("key", "1")).toBe(false)
+
+        expect(multimap.delete("key")).toBe(true)
+        expect(multimap.delete("key")).toBe(false)
+    })
+})
+
+describe('Multimap.keys', () => {
+    let multimap: Multimap
+
+    beforeEach(() => {
+        multimap = new Multimap()
+    })
+
+    it('should be an iterable', async () => {
         expect(multimap).toBeInstanceOf(Multimap)
 
         multimap.set("a", "0")
