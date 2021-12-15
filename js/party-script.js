@@ -81,22 +81,6 @@ function init_analyst() {
     });
 }
 
-// function init_dataowner() {
-//     axios.post(SERVER_ADDR + '/retrieveAnalystPublicKey', {
-//         "analystId": "analyst",
-//     }).then((res) => {
-//         var hexPublicKey = res.data
-
-//         var bigIntPublicKey = {
-//             "n": bigintConversion.hexToBigint(hexPublicKey.n),
-//             "g": bigintConversion.hexToBigint(hexPublicKey.g),
-//         }
-
-//         var publicKey = new paillierBigint.PublicKey(bigIntPublicKey.n, bigIntPublicKey.g)
-//         console.log("TEST", publicKey)
-//     });
-// }
-
 function paillierProcess(processedFile, analystPublicKey) {
 
     encryptedValues = []
@@ -116,7 +100,6 @@ function paillierProcess(processedFile, analystPublicKey) {
 
     encryptedSums = encryptedValues[0]
 
-    // console.log("encryptedSums", encryptedSums)
 
     // add columns
     for (let i = 1; i < encryptedValues.length; i++) {
@@ -225,26 +208,27 @@ async function setup_dataowner() {
     const [columnNames, records] = readFile()
     logSetup("Read %d records.", records.length)
 
-    const pke = simplecrypto.pkeKeyGen()
-
     /**
      * Some unfinished code related to AHE sums computed using
      * the server's public key.
      */
     const publicKeyRequest = await axios.post(
-        SERVER_ADDR + '/retrieveAnalystPublicKey',
+        SERVER_ADDR + '/retrieveAnalystPublicKeys',
         { "analystId": "analyst" }
     )
-    const hexPublicKey = publicKeyRequest.data.paillerPk
-    const analystPk = publicKeyRequest.data.pk
 
-    const bigIntPublicKey = {
-        n: bigintConversion.hexToBigint(hexPublicKey.n),
-        g: bigintConversion.hexToBigint(hexPublicKey.g),
-    }
-    const analystPublicKey = new paillierBigint.PublicKey(bigIntPublicKey.n, bigIntPublicKey.g)
+    // console.log(publicKeyRequest.data.pk)
 
-    const encryptedSums = paillierProcess(records, analystPublicKey);
+    // const hexPublicKey = publicKeyRequest.data.ahePk
+    // const analystPk = publicKeyRequest.data.pk
+
+    // const bigIntPublicKey = {
+    //     n: bigintConversion.hexToBigint(hexPublicKey.n),
+    //     g: bigintConversion.hexToBigint(hexPublicKey.g),
+    // }
+    // const analystPublicKey = new paillierBigint.PublicKey(bigIntPublicKey.n, bigIntPublicKey.g)
+
+    // const encryptedSums = paillierProcess(records, analystPublicKey);
 
 
     /**
@@ -406,14 +390,14 @@ async function setup_dataowner() {
     console.log("Initialized all hash tables.")
 
 
-    // SEND KEYS TO SERVER!!!!
-    axios.post(SERVER_ADDR + '/postSetup', {
-        "dataOwnerId": party_num.toString(),
-        "encryptedDataKeys": JSON.stringify({"structure": "some hex values!"}),
-        "encryptedDataStructures": JSON.stringify(eds)
-    }).then((res) => {
-        console.log(res.data)
-    });
+    // SEND DATA TO SERVER!!!!
+    // axios.post(SERVER_ADDR + '/postSetup', {
+    //     "dataOwnerId": party_num.toString(),
+    //     "encryptedDataKeys": JSON.stringify({"structure": "some hex values!"}),
+    //     "encryptedDataStructures": JSON.stringify(eds)
+    // }).then((res) => {
+    //     console.log(res.data)
+    // });
 
 
 }
