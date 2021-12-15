@@ -337,8 +337,13 @@ async function setup_dataowner() {
 
     // Initialize a hash function:
     const tableSize = BigInt(linkingTags.length * linkingTags.length)
-    const hashKey = EncryptedHashTable.pickHashKeyWithNoCollisions(linkingTags, tableSize)
-    console.log("Found hash key:", hashKey)
+    const zippedTags = zip(linkingTags)
+    let hashKey = undefined;
+    for (const [linkingLevel, levelTags] of zippedTags.entries()) {
+        hashKey = EncryptedHashTable.pickHashKeyWithNoCollisions(levelTags, tableSize)
+        console.log("Found hash key for level", linkingLevel, ":", hashKey)
+    }
+
 
     // Initialize all of the necesary hash tables.
     const ht1 = new EncryptedHashTable(hashKey, tableSize)
