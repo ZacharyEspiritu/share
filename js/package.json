@@ -16,7 +16,7 @@
     "containers": "file:containers",
     "express": "^4.17.1",
     "https": "^1.0.0",
-    "oprf": "^2.0.0",
+    "js-graph-algorithms": "^1.0.18",
     "paillier-bigint": "^3.2.5",
     "path": "^0.12.7",
     "simplecrypto": "file:simplecrypto"

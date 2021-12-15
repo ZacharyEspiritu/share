@@ -2,6 +2,7 @@ const axios = require('axios');
 const paillierBigint = require('paillier-bigint')
 const bigintConversion = require('bigint-conversion')
 const crypto = require("crypto")
+
 const fs = require("fs");
 const variables = require('./variables');
 
@@ -202,6 +203,14 @@ function zip(arrays) {
         return arrays.map(function(array){return array[i]})
     });
 }
+        // SEND DATA TO SERVER
+        axios.post(SERVER_ADDR + '/postSetup', {
+            "dataOwnerId": party_num.toString(),
+            "encryptedDataKeys": JSON.stringify({"structure": "some hex values!"}),
+            "encryptedDataStructures": JSON.stringify({"EMM": "todo"});
+        }).then((res) => {
+            console.log(res.data)
+        });
 
 async function setup_dataowner() {
     /**
@@ -232,11 +241,12 @@ async function setup_dataowner() {
     const encryptedSums = paillierProcess(records, analystPublicKey);
 
     // SEND KEYS TO SERVER!!!!
-    axios.post(SERVER_ADDR + '/postEncryptedDataKeys', {
+    axios.post(SERVER_ADDR + '/postSetup', {
         "dataOwnerId": party_num.toString(),
-        "encryptedDataKeys": JSON.stringify({"structure": "some hex values!"})
+        "encryptedDataKeys": JSON.stringify({"structure": "some hex values!"}),
+        "encryptedDataStructures": JSON.stringify({"EMM": "todo"});
     }).then((res) => {
-        console.log("keys!!", res.data)
+        console.log(res.data)
     });
 
     /**
