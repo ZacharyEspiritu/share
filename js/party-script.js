@@ -17,7 +17,7 @@ const logSetup = debug('dataowner-setup');
 
 var party = process.argv[2]
 var cmd = process.argv[3]
-var party_num = process.argv[4]
+var dataOwnerId = process.argv[4]
 
 const DATAOWNER = "DATAOWNER"
 const ANALYST = "ANALYST"
@@ -39,7 +39,7 @@ let analystSecretKeys = {}
 
 function readFile() {
     const contents = []
-    const FILE_PATH = "../scripts/test_data/" + party_num + ".csv"
+    const FILE_PATH = "../scripts/test_data/" + dataOwnerId + ".csv"
     var fileContents = fs.readFileSync(FILE_PATH).toString().split("\n");
 
     for (let i = 0; i < fileContents.length; i++) {
@@ -330,7 +330,7 @@ async function setup_dataowner() {
      const eds = { edxData, edxLink, emmFilter }
 
     axios.post(SERVER_ADDR + '/postSetup', {
-        "dataOwnerId": party_num.toString(),
+        "dataOwnerId": dataOwnerId.toString(),
         "keys": JSON.stringify({"structure": "some hex values!"}),
         "eds": JSON.stringify(eds)
     }).then((res) => {

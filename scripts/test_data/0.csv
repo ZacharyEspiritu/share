@@ -1,8 +1,71 @@
-LAST_NAME,SOCIAL_SEC,GENDER,BIRTH_DATE,ST_ADDR_1,ST_ADDR_2,ZIP,HEIGHT,TREAT_SUCCESS,OVERALL_OUTCOME
-Stanton,06c30e1b-5056-43a5-acbf-27cd0ab356d1,Androgynous,Wed Sep 30 2020 03:55:27 GMT-0400 (Eastern Daylight Time),381 Manuela Motorway,55423 Cleo Fork,45420,72,0,0
-Jakubowski,5f0d24fb-1bac-46e6-bc17-c7e8a7b1b693,Cisgender Woman,Tue Nov 24 2020 04:43:22 GMT-0500 (Eastern Standard Time),0330 Nitzsche Keys,8456 Afton Forge,07030,65,1,50
-Cremin,a2c3295c-152c-4ac7-ad8f-3c9eae8ab123,Other,Fri Jun 04 2021 18:42:55 GMT-0400 (Eastern Daylight Time),151 Flatley Cliff,6921 Wisozk Way,27348,65,0,73
-Grady,05d74e61-0070-484e-ace1-b0e5ce55632d,MTF,Tue Sep 22 2020 04:34:24 GMT-0400 (Eastern Daylight Time),652 McClure Overpass,9147 Madelynn River,39884,65,0,85
-Aufderhar,b56f0ebd-b938-47c1-883f-02e1650cab04,Cis Man,Sun Oct 25 2020 23:11:03 GMT-0400 (Eastern Daylight Time),018 Haylie Roads,62049 Nico Junctions,01428-7839,60,1,58
-Kuvalis,d26b51ae-ce34-4f61-8563-3784403997dd,Agender,Sat Feb 27 2021 23:30:09 GMT-0500 (Eastern Standard Time),4610 King Pines,2496 Beatty Mission,56000-2950,59,1,26
-Kemmer,3705a1fe-6c8c-4483-b2d1-e9ec02950ff7,Two-spirit,Wed Nov 04 2020 10:42:07 GMT-0500 (Eastern Standard Time),979 Bailey Glen,724 Tyson Square,33843,59,0,10
+LAST_NAME,SOCIAL_SEC,BIRTH_DATE,ST_ADDR_1,ZIP,WEIGHT,HEIGHT,SMOKER,TREAT_SUCCESS
+VonRueden,03f58be2-6690-4acf-9897-6518ff31572c,Sun Feb 28 2021 09:27:21 GMT-0500 (Eastern Standard Time),60551 Koelpin Isle,30098-6951,219,72,1,1
+Kilback,587b716b-23c0-4839-a04c-34c84048ac3d,Mon Jan 25 2021 19:03:35 GMT-0500 (Eastern Standard Time),201 Russel Passage,62792,121,78,0,1
+Hoppe,6b907a04-9c10-41b4-9b54-9ee112318d59,Wed Mar 10 2021 13:32:25 GMT-0500 (Eastern Standard Time),875 Rodger Lake,69559-5701,254,68,1,0
+Mertz,67d1618a-779e-41fb-b5ed-11016bc58003,Sat Jan 16 2021 04:11:43 GMT-0500 (Eastern Standard Time),9986 Cordell Crest,25708-6525,199,65,0,0
+Mraz,a3210abc-0286-4cde-a808-c2059848185d,Sat Oct 09 2021 14:02:40 GMT-0400 (Eastern Daylight Time),75367 Xander Squares,17219,96,58,1,0
+Anderson,e9940f37-b0c3-4ba6-bd74-534f92ec5ef9,Mon Feb 08 2021 09:29:11 GMT-0500 (Eastern Standard Time),522 Effertz Freeway,60040-8946,194,64,0,0
+Bailey,0210a6f8-ef86-4345-964a-99265882a572,Fri Feb 26 2021 06:20:35 GMT-0500 (Eastern Standard Time),00726 Dooley Place,27912,231,73,0,0
+Purdy,8ad72669-2a57-4b84-a47b-16e58d8878e2,Mon Dec 06 2021 16:41:30 GMT-0500 (Eastern Standard Time),9311 Tremblay Wall,43596-4540,98,83,1,0
+Ratke,2868ac26-19cb-42ae-a85a-3fdee6a0625c,Sat Apr 03 2021 00:53:18 GMT-0400 (Eastern Daylight Time),425 Leonel Street,62322,206,67,0,1
+Grady,f54fb510-ebcc-4573-9ef9-5cb198dd1c66,Tue Jan 19 2021 05:43:30 GMT-0500 (Eastern Standard Time),54184 Isom Shore,99353-2624,232,77,0,1
+Douglas,2684a657-9e15-410d-9665-8235b7848626,Wed Jun 16 2021 17:41:51 GMT-0400 (Eastern Daylight Time),7694 Jordan Park,30632-6010,181,77,1,1
+Goodwin,bff4f4ca-876c-47ad-86c9-cbd305a66939,Mon Jul 19 2021 03:47:10 GMT-0400 (Eastern Daylight Time),1831 Ellen Camp,31219-8708,114,81,1,1
+Mills,76a3c3b2-6c05-47d2-b82d-9d6ddb3d3cee,Tue Dec 07 2021 01:45:08 GMT-0500 (Eastern Standard Time),0197 Orn Cape,82431-9875,143,74,1,1
+Collier,be80738e-f7a3-44ed-afcb-39eccba406e4,Fri Dec 18 2020 01:07:10 GMT-0500 (Eastern Standard Time),52982 Nolan View,08294,102,79,0,0
+Orn,07418b09-d206-4547-9a4d-b2c01ad2bbe8,Thu Mar 25 2021 02:19:44 GMT-0400 (Eastern Daylight Time),80268 Bernadine Springs,82251,188,84,1,0
+Little,6db9835a-72b7-4a69-83fe-fab93d8e6130,Thu Dec 17 2020 03:34:36 GMT-0500 (Eastern Standard Time),25962 Ava Cliffs,72050,133,57,0,0
+Grant,25242dfe-a429-4686-b5d9-c7cb6c19e02a,Fri Oct 01 2021 14:42:43 GMT-0400 (Eastern Daylight Time),2068 Tromp Courts,87171-4444,207,68,0,0
+Morissette,e6cc290a-9243-4d10-b711-637aa3232a8f,Fri Nov 05 2021 05:51:51 GMT-0400 (Eastern Daylight Time),2105 Dejah Plaza,64349-5362,116,68,1,0
+Lowe,5e5e1d41-40ad-4d6d-a87a-8f56839947a2,Wed Sep 08 2021 04:55:18 GMT-0400 (Eastern Daylight Time),225 Cassin Avenue,72658-2141,240,81,0,1
+Goldner,bc501e16-78b8-47e0-af66-25e8ee10b2d9,Tue Mar 16 2021 10:34:31 GMT-0400 (Eastern Daylight Time),4502 Watsica Dam,07260-8069,146,87,1,0
+Erdman,2246a480-a0ce-4e7e-92aa-a6ae896bc4ee,Fri Aug 06 2021 04:49:56 GMT-0400 (Eastern Daylight Time),11182 Bartell Streets,55010-8222,103,62,1,0
+Olson,74d44981-4411-41b0-a614-0d22b0781a22,Thu Dec 02 2021 12:11:35 GMT-0500 (Eastern Standard Time),030 Triston Loop,56933,130,81,0,1
+Dietrich,92cce9f3-1d3c-49f7-b4af-8f5cd885f85d,Tue Oct 26 2021 10:37:26 GMT-0400 (Eastern Daylight Time),4128 Jacobi Course,84339-4752,181,70,0,1
+Pfeffer,e943ab7c-71fc-4fe3-b699-b5bb3208a572,Sat Nov 06 2021 16:57:18 GMT-0400 (Eastern Daylight Time),60722 Schulist Locks,93307-9908,215,82,0,0
+Jones,5270bf24-0a53-4ad3-b8e0-682e9a958fd5,Tue Mar 23 2021 13:55:17 GMT-0400 (Eastern Daylight Time),116 Cremin Extension,82133,208,74,0,1
+Ebert,7c48c96a-d5b5-4e04-94ca-f84e6d4bd0e1,Thu Jan 21 2021 04:35:30 GMT-0500 (Eastern Standard Time),31838 Daryl Highway,50978,147,73,0,0
+Welch,85d5fedd-78f7-4e28-976a-43c25c31023a,Mon Feb 08 2021 19:09:33 GMT-0500 (Eastern Standard Time),1650 Schulist Pine,55526,90,70,1,0
+Stracke,40579d15-8117-4c63-8ef9-48f2484b53fe,Sun Mar 14 2021 22:11:37 GMT-0400 (Eastern Daylight Time),34381 Christine Stravenue,84069-3444,157,62,0,1
+Watsica,a97b23d5-e812-4916-8a56-940e78b66d74,Fri Mar 12 2021 05:58:36 GMT-0500 (Eastern Standard Time),0114 Lambert Bypass,21940,102,88,0,1
+O'Hara,9f2f4e6a-2aa2-475c-a314-bc81ff506df1,Fri Oct 22 2021 14:46:18 GMT-0400 (Eastern Daylight Time),4411 Murray Shoal,87152-9288,245,87,1,1
+Bednar,9b614589-74cb-42c0-8c1b-18b048632557,Fri Oct 08 2021 22:51:53 GMT-0400 (Eastern Daylight Time),2172 Raul Crest,01918-7945,102,79,0,0
+Hammes,d04675c6-2b2a-4b48-8379-f81759dd2f10,Sun Jun 20 2021 18:59:38 GMT-0400 (Eastern Daylight Time),788 Sonny Station,09863-3694,223,67,1,1
+Yost,109a2431-9299-41c7-b1ae-d8551716eca5,Sun Apr 11 2021 16:56:02 GMT-0400 (Eastern Daylight Time),282 Baumbach Estate,18545-7569,214,72,1,1
+Considine,78930430-404c-4245-ac9a-24eb00a7aca7,Wed May 26 2021 05:32:06 GMT-0400 (Eastern Daylight Time),241 Margot Center,30401-6243,213,72,1,1
+Ruecker,a46a474f-a773-4221-a655-61c0176b19ab,Fri Jan 22 2021 12:28:40 GMT-0500 (Eastern Standard Time),988 Bud Glen,18997-2678,150,83,1,0
+Trantow,e9eefd41-92a3-4aa6-9ebb-cb2f50e2aa5f,Sat Sep 25 2021 22:27:08 GMT-0400 (Eastern Daylight Time),848 Theresa Rapid,14977-3649,153,64,0,1
+Barton,181e3cd5-8df8-45b5-a8f9-6a71ed51edf2,Wed Nov 17 2021 02:25:31 GMT-0500 (Eastern Standard Time),43358 Oscar Flat,52718,218,57,0,0
+Hane,bafb45fa-dcb3-4125-b0ce-b769880dde90,Fri Jul 09 2021 13:04:46 GMT-0400 (Eastern Daylight Time),4916 Verla Ramp,71351-2244,255,58,1,1
+Mueller,020e78b0-98c2-4db2-918a-42727515654b,Sun Jan 03 2021 16:21:21 GMT-0500 (Eastern Standard Time),22807 Kaelyn Drive,00794-2877,248,63,0,0
+Lakin,cf637a30-9391-4398-b644-f1f80eb53bb9,Tue Apr 13 2021 08:55:24 GMT-0400 (Eastern Daylight Time),5498 Greenholt Inlet,03911-7932,229,71,1,1
+Dicki,2e063ca6-d0ba-4da4-9f9a-9e9e7dfdf5b2,Sat Aug 14 2021 23:50:44 GMT-0400 (Eastern Daylight Time),162 Wilkinson Haven,38863,208,83,0,1
+Smitham,1bcfc257-11b9-4e0b-90ce-1b8c7d9fa339,Wed Jul 14 2021 14:33:39 GMT-0400 (Eastern Daylight Time),498 Pearl Road,73050,173,87,1,1
+Braun,4f3d9134-225a-49db-bb1e-aa07fd1fb6f8,Tue Jan 19 2021 08:30:09 GMT-0500 (Eastern Standard Time),58321 Sebastian Walk,10565-3108,215,66,0,0
+Hand,00d32298-9b97-4354-9ea3-aa8feb7540a0,Wed Mar 24 2021 04:16:07 GMT-0400 (Eastern Daylight Time),3967 Jenkins Squares,53038-5357,102,84,0,1
+Padberg,89d81192-d134-485c-a82c-6213602a5ef1,Thu Apr 29 2021 13:00:50 GMT-0400 (Eastern Daylight Time),8245 Macey Courts,84066-3883,119,74,0,1
+Nienow,723a8b1d-af4c-492f-aa70-301c201f2f9a,Tue Sep 14 2021 14:57:53 GMT-0400 (Eastern Daylight Time),8318 Corwin Forge,90122,121,58,1,0
+Senger,9157b4c6-c252-437c-a02d-359b43550978,Thu Jan 21 2021 17:05:31 GMT-0500 (Eastern Standard Time),2445 Zechariah Lock,49817-9544,213,61,0,0
+Haley,a16d67e1-f0a1-4160-bc33-547b3ecb6570,Tue Jul 13 2021 20:18:54 GMT-0400 (Eastern Daylight Time),209 Lavinia Greens,55994-6805,198,62,1,1
+MacGyver,4687ecb3-96e2-425f-8c6e-36cad9d18d89,Thu Nov 18 2021 17:44:07 GMT-0500 (Eastern Standard Time),185 Name Courts,91138,201,63,1,1
+Ratke,3b7a05a6-495c-4dc2-9d28-b77da1a5ad81,Thu Nov 11 2021 20:42:36 GMT-0500 (Eastern Standard Time),99098 Macejkovic Crossing,43168,207,66,0,1
+Kuhlman,77cd8cef-06d7-469d-8ade-81a0f5f5b36b,Mon Sep 20 2021 05:46:35 GMT-0400 (Eastern Daylight Time),6088 Sunny Squares,57709,125,60,1,0
+Wuckert,5bcf413c-327f-4c68-a586-04f3f10b2140,Sun Apr 18 2021 00:37:45 GMT-0400 (Eastern Daylight Time),040 Domenic Haven,89442,116,78,1,0
+Rutherford,7838e75e-3772-4e42-a9e9-dbb8dfbd62a0,Sat Oct 23 2021 17:56:10 GMT-0400 (Eastern Daylight Time),9613 Senger Junction,95896-5999,106,81,1,1
+Gusikowski,a800fdd6-7e9f-4fa0-b6e4-18b46a6d4427,Sun Apr 11 2021 11:26:53 GMT-0400 (Eastern Daylight Time),35709 Dahlia Ville,06374,235,64,1,1
+Breitenberg,c6a454e1-a072-4cef-b790-3919a64ad965,Wed Jun 02 2021 09:17:37 GMT-0400 (Eastern Daylight Time),52335 Dewitt Mountains,26803-6584,227,58,0,1
+Jacobs,f25cde50-c01f-49aa-99d0-a0ee160c0c37,Mon Jul 05 2021 22:18:46 GMT-0400 (Eastern Daylight Time),9550 Hailey Mount,89031,169,66,1,0
+Halvorson,9aeead84-4a2a-4489-8ce4-8a98b1039637,Fri Jul 02 2021 05:28:24 GMT-0400 (Eastern Daylight Time),5090 Cummings Burgs,48645-9807,228,64,1,0
+Hackett,df822026-e69f-474f-a72c-ae88ba32fa7e,Sun Apr 04 2021 16:59:47 GMT-0400 (Eastern Daylight Time),1591 Willa Cape,01644,185,62,1,1
+Dickinson,7f4ccb10-f365-4014-b63c-a4ea5e508bc7,Sat Jun 19 2021 11:35:22 GMT-0400 (Eastern Daylight Time),2505 Domenico Walks,36708-6660,224,79,0,0
+Schiller,3daa3ae7-541a-4218-853f-ee09a4eeabbe,Mon Dec 06 2021 10:18:24 GMT-0500 (Eastern Standard Time),897 Patsy Road,30900-4410,245,79,0,1
+Toy,ab841520-febb-4fad-88e3-1b28c611be10,Thu Jun 17 2021 14:05:34 GMT-0400 (Eastern Daylight Time),402 Becker Alley,62699,208,81,0,0
+Rice,edf316e0-baa8-4a89-a2a4-dd60c0ef49a7,Wed Sep 22 2021 14:55:22 GMT-0400 (Eastern Daylight Time),60415 Savanah Curve,16053,138,87,1,1
+Kub,ab55b98a-922e-45d9-98fd-32c7a46c8379,Sat Oct 09 2021 05:55:54 GMT-0400 (Eastern Daylight Time),6300 Hahn Falls,32355,108,61,1,0
+O'Keefe,59b1df80-d72d-4b4b-84ed-edb991cc009f,Thu Feb 04 2021 14:01:28 GMT-0500 (Eastern Standard Time),6784 Mante Freeway,46131-9112,242,70,0,1
+Hauck,ec50c41a-e66c-4acd-9b6d-20f9f000ef26,Wed Oct 27 2021 08:32:23 GMT-0400 (Eastern Daylight Time),1742 Littel Branch,44458-1495,173,88,0,0
+O'Connell,ec2da72a-2c7f-48b2-824b-634cb0ea8496,Sun May 30 2021 15:39:00 GMT-0400 (Eastern Daylight Time),222 Shanahan Ranch,03517,152,61,0,0
+Langworth,6cd24e4d-0ce6-4d66-9864-5bf15021e0e3,Wed Jul 21 2021 06:08:20 GMT-0400 (Eastern Daylight Time),3757 Kuvalis Point,09244-7486,164,74,1,0
+Cormier,c2bd725b-c9e5-4b7b-9f96-e1d7541c3891,Thu Jul 08 2021 11:11:34 GMT-0400 (Eastern Daylight Time),8444 Tobin Viaduct,88977-4853,183,61,0,0
+Nitzsche,9dc474dd-6604-49db-9d29-46a242f0d885,Mon Jan 18 2021 18:20:34 GMT-0500 (Eastern Standard Time),632 Hammes Keys,01630,112,76,1,1
+Franecki,56645cd9-dd2d-4686-aeda-67016d0242b1,Thu Jul 08 2021 14:31:19 GMT-0400 (Eastern Daylight Time),689 Queen Roads,62235-0139,205,65,0,1

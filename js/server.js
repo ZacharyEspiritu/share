@@ -2,11 +2,15 @@ const express = require('express');
 const app = express();
 const port = 8083;
 const path = require('path');
+
+const containers = require("containers");
 const jsgraphs = require('js-graph-algorithms');
+const PiBase = containers.PiBase;
 
 let analystPublicKeys = {};
 let encryptedDataKeys = {};
 let encryptedDataStructures = {};
+let unserializedEDS = {};
 
 app.use(express.static(__dirname + '/client'));
 app.use(express.urlencoded({extended: true}));
@@ -56,15 +60,44 @@ app.post('/postSetup', async function(req, res) {
 });
 
 app.post('/postQuery', async function(req, res) {
-  let query = req.body.query;
+  let q = req.body.query;
 
-  link()
+  q = "Dietrich"
+
+  query(q)
   console.log("Query success");
   res.status(200).send("test");
 });
 
+function unserialize() {
+  for (dataOwner in encryptedDataStructures) {
+    let parsed = JSON.parse(encryptedDataStructures[dataOwner])
+    let edxData = PiBase.fromJSON(parsed.edxData);
+    let emmFilter = PiBase.fromJSON(parsed.emmFilter);
+    let edxLink = PiBase.fromJSON(parsed.edxLink);
+    
+    unserializedEDS[dataOwner] = {edxData, emmFilter, edxLink}
+  }
+}
+
+function query(q) {
+
+  // if unserialized empty
+  unserialize()
+
+  filter(q)
+}
+
+function filter() {
+  for (dataOwner in unserializedEDS) {
+
+  }
+
+}
 
 function link() {
   var g = new jsgraphs.Graph(6);
-  console.log(g)
+  for (dataOwner in encryptedDataStructures) {
+   
+  }
 }
