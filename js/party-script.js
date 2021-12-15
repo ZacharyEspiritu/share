@@ -336,6 +336,7 @@ async function setup_dataowner() {
     // TODO(zespirit): Retrieve previous HTs from server.
 
     // Initialize a hash function:
+    logSetup("Initializing hash functions...")
     const tableSize = BigInt(linkingTags.length * linkingTags.length)
     const zippedTags = zip(linkingTags)
     let hashKey = undefined;
@@ -343,48 +344,50 @@ async function setup_dataowner() {
         hashKey = EncryptedHashTable.pickHashKeyWithNoCollisions(levelTags, tableSize)
         console.log("Found hash key for level", linkingLevel, ":", hashKey)
     }
+    logSetup("Done initializing hash keys.")
 
 
     // Initialize all of the necesary hash tables.
     const ht1 = new EncryptedHashTable(hashKey, tableSize)
 
     for (const [linkTag, recordId, record] of recordsWithIdsAndTags) {
-        for (const [index, subTag] of linkTag.entries()) {
-            const dxSums = new Map()
-            // TODO(zespirit): We only want to iterate over columns in X^nums.
-            for (const columnName of columnNames) {
-                const columnIndex = getColumnIndex(columnName, columnNames)
-                const columnValue = record[columnIndex]
-                dxSums.set(columnName, analystPublicKey.encrypt())
-            }
-        }
-        dxData.set(recordId, record)
-        dxLink.set(recordId, linkTag)
+        // for (const [index, subTag] of linkTag.entries()) {
+        //     const dxSums = new Map()
+        //     // TODO(zespirit): We only want to iterate over columns in X^nums.
+        //     for (const columnName of columnNames) {
+        //         const columnIndex = getColumnIndex(columnName, columnNames)
+        //         const columnValue = record[columnIndex]
+        //         dxSums.set(columnName, analystPublicKey.encrypt())
+        //     }
+        // }
+        // dxData.set(recordId, record)
+        // dxLink.set(recordId, linkTag)
     }
+    logSetup("Done initializing hash tables.")
 
 
-    // setup HT starts here?
-    const numPreviousParties = 3; // TODO(zespirit): Do this better
+    // // setup HT starts here?
+    // const numPreviousParties = 3; // TODO(zespirit): Do this better
 
-    // // Initialize a hash function:
-    // const tableSize = BigInt(linkingTags.length * linkingTags.length)
-    // const hashKey = EncryptedHashTable.pickHashKeyWithNoCollisions(linkingTags, tableSize)
-    // console.log("Found hash key:", hashKey)
+    // // // Initialize a hash function:
+    // // const tableSize = BigInt(linkingTags.length * linkingTags.length)
+    // // const hashKey = EncryptedHashTable.pickHashKeyWithNoCollisions(linkingTags, tableSize)
+    // // console.log("Found hash key:", hashKey)
 
-    // // Initialize all of the necesary hash tables.
-    // const ht1 = new EncryptedHashTable(hashKey, tableSize)
-    const ht2s = new Array(numPreviousParties) // HT using 2 columns
-    const ht3s = new Array(numPreviousParties) // HT using 3 columns
-    for (let j = 0; j < numPreviousParties; j++) {
-        ht2s[j] = new EncryptedHashTable(hashKey, tableSize)
+    // // // Initialize all of the necesary hash tables.
+    // // const ht1 = new EncryptedHashTable(hashKey, tableSize)
+    // const ht2s = new Array(numPreviousParties) // HT using 2 columns
+    // const ht3s = new Array(numPreviousParties) // HT using 3 columns
+    // for (let j = 0; j < numPreviousParties; j++) {
+    //     ht2s[j] = new EncryptedHashTable(hashKey, tableSize)
 
-        const ht3k = new Array(numPreviousParties)
-        for (let k = 0; k < numPreviousParties; k++) {
-            ht3k[k] = new EncryptedHashTable(hashKey, tableSize)
-        }
-        ht3s[j] = ht3k
-    }
-    console.log("Initialized all hash tables.")
+    //     const ht3k = new Array(numPreviousParties)
+    //     for (let k = 0; k < numPreviousParties; k++) {
+    //         ht3k[k] = new EncryptedHashTable(hashKey, tableSize)
+    //     }
+    //     ht3s[j] = ht3k
+    // }
+    // console.log("Initialized all hash tables.")
 
 
     // // SEND KEYS TO SERVER!!!!
