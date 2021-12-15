@@ -46,10 +46,8 @@ class PiBase {
             for (const value of (_a = multimap.get(keyword)) !== null && _a !== void 0 ? _a : []) {
                 const encryptedLabel = (0, simplecrypto_1.hmac)(labelKey, counter.toString()).toString();
                 const encryptedValue = (0, simplecrypto_1.symmetricEncrypt)(valueKey, JSON.stringify(value));
-                console.log(counter, encryptedLabel, encryptedValue);
                 counter += 1;
                 this.entries.set(encryptedLabel, encryptedValue);
-                console.log(this.entries.get(encryptedLabel));
             }
         }
         return key;
@@ -73,18 +71,17 @@ class PiBase {
      * and queries the encrypted structure for the records corresponding
      * to the token. Returns a JavaScript Set corresponding to the result.
      *
-     * If this.isResponseRevealing = true, the returned Set is composed of
-     * plaintext values. Otherwise, the returned Set is composed of
-     * ciphertext values that need to be decrypted by a call to PiBase.resolve.
+     * If this.isResponseRevealing = true, the returned Set is composed
+     * of plaintext values. Otherwise, the returned Set is composed of
+     * ciphertext values that need to be decrypted by a call to
+     * PiBase.resolve.
      */
     query(searchToken) {
         const result = new Set();
         let counter = 0;
-        console.log(this.entries);
         while (true) {
             const encryptedLabel = (0, simplecrypto_1.hmac)(searchToken.labelKey, counter.toString()).toString();
             const encryptedValue = this.entries.get(encryptedLabel);
-            console.log(counter, encryptedLabel, encryptedValue);
             if (encryptedValue) {
                 if (this.isResponseRevealing && searchToken.valueKey) {
                     const plaintextValue = JSON.parse((0, simplecrypto_1.symmetricDecrypt)(searchToken.valueKey, encryptedValue));

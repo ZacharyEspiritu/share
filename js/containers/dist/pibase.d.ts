@@ -41,9 +41,10 @@ export default class PiBase<K, V> {
      * and queries the encrypted structure for the records corresponding
      * to the token. Returns a JavaScript Set corresponding to the result.
      *
-     * If this.isResponseRevealing = true, the returned Set is composed of
-     * plaintext values. Otherwise, the returned Set is composed of
-     * ciphertext values that need to be decrypted by a call to PiBase.resolve.
+     * If this.isResponseRevealing = true, the returned Set is composed
+     * of plaintext values. Otherwise, the returned Set is composed of
+     * ciphertext values that need to be decrypted by a call to
+     * PiBase.resolve.
      */
     query(searchToken: PiBaseSearchToken): Set<string | Ciphertext>;
 }
