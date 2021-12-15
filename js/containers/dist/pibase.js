@@ -35,19 +35,27 @@ class PiBase {
      *
      * Returns the secret key.
      */
-    setup(multimap) {
+    setup(map) {
         var _a;
         this.entries = new Map();
         const key = (0, simplecrypto_1.secureRandom)(32);
-        for (const keyword of multimap.keys()) {
+        for (const keyword of map.keys()) {
             const labelKey = (0, simplecrypto_1.hkdf)(key, keyword + "label");
             const valueKey = (0, simplecrypto_1.hkdf)(key, keyword + "value");
             let counter = 0;
-            for (const value of (_a = multimap.get(keyword)) !== null && _a !== void 0 ? _a : []) {
+            if (map instanceof Map) {
+                const value = map.get(keyword);
                 const encryptedLabel = (0, simplecrypto_1.hmac)(labelKey, counter.toString()).toString();
                 const encryptedValue = (0, simplecrypto_1.symmetricEncrypt)(valueKey, JSON.stringify(value));
-                counter += 1;
                 this.entries.set(encryptedLabel, encryptedValue);
+            }
+            else { // (map instanceof Multimap)
+                for (const value of (_a = map.get(keyword)) !== null && _a !== void 0 ? _a : []) {
+                    const encryptedLabel = (0, simplecrypto_1.hmac)(labelKey, counter.toString()).toString();
+                    const encryptedValue = (0, simplecrypto_1.symmetricEncrypt)(valueKey, JSON.stringify(value));
+                    counter += 1;
+                    this.entries.set(encryptedLabel, encryptedValue);
+                }
             }
         }
         return key;

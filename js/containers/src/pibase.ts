@@ -44,21 +44,30 @@ export default class PiBase<K, V> {
      *
      * Returns the secret key.
      */
-    setup(multimap: Multimap<K, V>): Buffer {
+    setup(map: Multimap<K, V>|Map<K, V>): Buffer {
         this.entries = new Map()
 
         const key = secureRandom(32)
-        for (const keyword of multimap.keys()) {
+        for (const keyword of map.keys()) {
             const labelKey = hkdf(key, keyword + "label")
             const valueKey = hkdf(key, keyword + "value")
             let counter = 0
 
-            for (const value of multimap.get(keyword) ?? []) {
+            if (map instanceof Map) {
+                const value = map.get(keyword);
                 const encryptedLabel = hmac(labelKey, counter.toString()).toString()
                 const encryptedValue = symmetricEncrypt(valueKey, JSON.stringify(value))
-                counter += 1
                 this.entries.set(encryptedLabel, encryptedValue)
             }
+            else { // (map instanceof Multimap)
+                for (const value of map.get(keyword) ?? []) {
+                    const encryptedLabel = hmac(labelKey, counter.toString()).toString()
+                    const encryptedValue = symmetricEncrypt(valueKey, JSON.stringify(value))
+                    counter += 1
+                    this.entries.set(encryptedLabel, encryptedValue)
+                }
+            }
+
         }
 
         return key

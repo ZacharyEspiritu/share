@@ -30,7 +30,7 @@ export default class PiBase<K, V> {
      *
      * Returns the secret key.
      */
-    setup(multimap: Multimap<K, V>): Buffer;
+    setup(map: Multimap<K, V> | Map<K, V>): Buffer;
     /**
      * Computes a PiBase search token over the given secret key and
      * keyword.
