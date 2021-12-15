@@ -35,3 +35,42 @@ export function symmetricDecrypt(key: string|Buffer, ciphertext: Ciphertext): st
     decrypted = Buffer.concat([decrypted, decipher.final()])
     return decrypted.toString()
 }
+
+export type PKEPublicKey = string
+export type PKEPrivateKey = string
+
+export type PKEKey = {
+    publicKey: PKEPublicKey
+    privateKey: PKEPrivateKey
+}
+
+export function pkeKeyGen() {
+    return crypto.generateKeyPairSync('ed25519', {
+        modulusLength: 4096,
+        publicKeyEncoding: {
+            type: 'spki',
+            format: 'pem',
+        },
+        privateKeyEncoding: {
+            type: 'pkcs8',
+            format: 'pem',
+            cipher: 'aes-256-cbc',
+            passphrase: '',
+        },
+    })
+}
+
+export function pkeEncrypt(publicKey: PKEPublicKey, plaintext: string): Buffer {
+    return crypto.publicEncrypt({
+        key: publicKey,
+        padding: crypto.constants.RSA_PKCS1_PADDING,
+    }, Buffer.from(plaintext));
+}
+
+export function pkeDecrypt(privateKey: PKEPrivateKey, ciphertext: Buffer): string {
+    const decrypted = crypto.privateDecrypt({
+        key: privateKey,
+        padding: crypto.constants.RSA_PKCS1_PADDING,
+    }, ciphertext);
+    return decrypted.toString();
+}
