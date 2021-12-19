@@ -129,7 +129,6 @@ export default class Multimap<K, V> {
                 }
             }
         }
-
         return iterator
     }
 }

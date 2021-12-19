@@ -11,6 +11,8 @@ const simplecrypto = require("simplecrypto");
 const containers = require("containers");
 const Multimap = containers.Multimap;
 const PiBase = containers.PiBase;
+const EHT = containers.EHT;
+const ELS = containers.ELS;
 
 const debug = require("debug");
 const logSetup = debug('dataowner-setup');
@@ -338,79 +340,39 @@ async function setup_dataowner() {
     });
 
     // TODO(zespirit): Missing PKE encryption here.
-    // TODO(zespirit): Send serializedEds to the server here.
-
 
     // TODO(zespirit): Retrieve previous HTs from server.
 
+    /**
+     * Initialize an ELS ("encrypted linking structure") object.
+     *
+     * This generates the internal hash tables (and their keys) in such
+     * a way that the linking tags (as given by linkingTags) for the same
+     * linking level do not result in collisions, as needed by the
+     * functionality requirements for the ELS structure.
+     */
+    logSetup("Initializing the ELS...")
+    const els = new ELS(columnNames, variables.NUM_LINK_LEVELS, linkingTags)
 
-    // Initialize a hash function:
-    logSetup("Initializing hash functions...")
-    const tableSize = BigInt(linkingTags.length * linkingTags.length)
-    const zippedTags = zip(linkingTags)
-    const hashKeysPerLevel = new Map();
-    for (const [linkingLevel, levelTags] of zippedTags.entries()) {
-        const hashKey = EncryptedHashTable.pickHashKeyWithNoCollisions(levelTags, tableSize)
-        console.log("Found hash key for level", linkingLevel, ":", hashKey)
-        hashKeysPerLevel.set(linkingLevel, hashKey)
-    }
-    logSetup("Done initializing hash keys.")
-
-
-    // Initialize all of the necesary hash tables.
-    const hashTables = new Map()
-
-    const selfHashTable = new Map()
-    hashTables.set(dataOwnerId, selfHashTable)
-
-    for (const [linkTag, recordId, record] of recordsWithIdsAndTags) {
-        logSetup("Setting up hash tables for record...")
-        for (const [linkingLevel, subTag] of linkTag.entries()) {
-            const dxSums = new Map()
-            for (const columnName of variables.NUMERICAL) {
-                const columnIndex = getColumnIndex(columnName, columnNames)
+    /**
+     * Set up the AHE-encrypted values inside of the ELS object.
+     */
+    for (const columnName of variables.NUMERICAL) {
+        logSetup("Initializing ELS data for column", columnName)
+        const columnIndex = getColumnIndex(columnName, columnNames)
+        for (let linkLevel = 0; linkLevel < variables.NUM_LINK_LEVELS; linkLevel++) {
+            const eht = els.getTable(columnName, linkLevel)
+            for (const [linkTag, recordId, record] of recordsWithIdsAndTags) {
+                const subTag = linkTag[linkLevel]
                 const columnValue = record[columnIndex]
                 const numValue = BigInt(parseInt(columnValue))
-                dxSums.set(columnName, analystPublicKey.encrypt(numValue))
+                eht.add(subTag, analystPublicKey.encrypt(numValue))
             }
-
-            // This represents
-            //
-            //      HT[dataOwnerId][linkingLevel] = DX_sums       and
-            //
-            //      DX_sums[columnName]
-            //
-            const hashKey = hashKeysPerLevel.get(linkingLevel)
-            const hashTable = new EncryptedHashTable(hashKey, tableSize)
-            hashTables.get(dataOwnerId).set(linkingLevel, dxSums)
         }
     }
-    logSetup("Done initializing hash tables.")
+    logSetup("Done with ELS setup.")
 
-
-    // // // setup HT starts here?
-    // // const numPreviousParties = 3; // TODO(zespirit): Do this better
-
-    // // // // Initialize a hash function:
-    // // // const tableSize = BigInt(linkingTags.length * linkingTags.length)
-    // // // const hashKey = EncryptedHashTable.pickHashKeyWithNoCollisions(linkingTags, tableSize)
-    // // // console.log("Found hash key:", hashKey)
-
-    // // // // Initialize all of the necesary hash tables.
-    // // // const ht1 = new EncryptedHashTable(hashKey, tableSize)
-    // // const ht2s = new Array(numPreviousParties) // HT using 2 columns
-    // // const ht3s = new Array(numPreviousParties) // HT using 3 columns
-    // // for (let j = 0; j < numPreviousParties; j++) {
-    // //     ht2s[j] = new EncryptedHashTable(hashKey, tableSize)
-
-    // //     const ht3k = new Array(numPreviousParties)
-    // //     for (let k = 0; k < numPreviousParties; k++) {
-    // //         ht3k[k] = new EncryptedHashTable(hashKey, tableSize)
-    // //     }
-    // //     ht3s[j] = ht3k
-    // // }
-    // // console.log("Initialized all hash tables.")
-
+    // TODO(zespirit): Send the ELS instance to the server.
 }
 
 function query_analyst() {
