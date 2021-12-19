@@ -364,6 +364,11 @@ async function setup_dataowner() {
                 const numValue = BigInt(parseInt(columnValue))
                 eht.add(subTag, analystPublicKey.encrypt(numValue))
             }
+            /**
+             * Populate the remaining empty spaces with encryptions of 0.
+             */
+            logSetup("Populating remaining empty spaces...")
+            eht.populateEmptySpaces(() => analystPublicKey.encrypt(0n))
         }
     }
     logSetup("Done with ELS setup.")

@@ -26,9 +26,11 @@ export default class EHT<T> {
      * not the total number of records actually stored in the EHT.
      */
     getTableSize(): number;
-    [Symbol.iterator](): {
-        next(): IteratorResult<[number, T]>;
-    };
+    /**
+     * Populates all empty spaces in the EHT with the value returned
+     * by an application of defaultThunk.
+     */
+    populateEmptySpaces(defaultThunk: () => T): void;
     static pickHashKey(lst: Iterable<string>, tableSize: number): Buffer;
     toJSON(): {
         values: T[];

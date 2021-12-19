@@ -47,19 +47,14 @@ export default class EHT<T> {
         return this.tableSize
     }
 
-    [Symbol.iterator]() {
-        const self = this;
-        let nextIndex = 0;
-
-        return {
-            next(): IteratorResult<[number, T]> {
-                if (nextIndex < self.tableSize) {
-                    const thisIndex = nextIndex;
-                    nextIndex++;
-                    return {value: [thisIndex, self.values[thisIndex]], done: false}
-                } else {
-                    return {value: [nextIndex, self.values[nextIndex]], done: true}
-                }
+    /**
+     * Populates all empty spaces in the EHT with the value returned
+     * by an application of defaultThunk.
+     */
+    populateEmptySpaces(defaultThunk: () => T): void {
+        for (let index = 0; index < this.tableSize; index++) {
+            if (this.values[index] === undefined) {
+                this.values[index] = defaultThunk()
             }
         }
     }
