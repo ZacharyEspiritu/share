@@ -203,14 +203,13 @@ async function setup_dataowner() {
     logSetup("Read %d records.", records.length)
 
     /**
-     * Some unfinished code related to AHE sums computed using
-     * the server's public key.
+     * Request the server's public key data and initialize the
+     * necessary client-side key structures.
      */
     const publicKeyRequest = await axios.post(
         SERVER_ADDR + '/getAnalystPublicKeys',
         { "analystId": "analyst" }
     )
-
 
     const hexPublicKey = JSON.parse(publicKeyRequest.data.ahePk)
     const analystPk = publicKeyRequest.data.pk
@@ -221,9 +220,6 @@ async function setup_dataowner() {
     }
 
     const analystPublicKey = new paillierBigint.PublicKey(bigIntPublicKey.n, bigIntPublicKey.g)
-
-    const encryptedSums = paillierProcess(records, analystPublicKey);
-
 
     /**
      * Compute linking tags via the OPRF.
