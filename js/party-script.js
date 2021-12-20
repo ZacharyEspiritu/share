@@ -333,7 +333,7 @@ async function setup_dataowner() {
         "keys": key,
         "eds": JSON.stringify(eds)
     }).then((res) => {
-        console.log("Sent EDS & Keys")
+        // console.log("Sent EDS & Keys")
     });
 
     // TODO(zespirit): Missing PKE encryption here.
@@ -402,8 +402,14 @@ function query_analyst() {
             axios.post(SERVER_ADDR + '/postQuery', {
               "query": JSON.stringify(tokens)
             }).then((res) => {
-                // TODO: resolve
-                console.log(res.data)
+
+                for (let dataOwner in keys) {
+                    let k = keys[dataOwner].keyData
+
+                    let data = (res.data[dataOwner])
+                    let plaintext = PiBase.resolve(k, data)
+                    console.log(plaintext)   
+                }
             });
 
 

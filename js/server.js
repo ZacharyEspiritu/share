@@ -102,7 +102,7 @@ function query(tks) {
 }
 
 function filter(tks) {
-  var records = []
+  var records = {}
   for (dataOwner in unserializedEDS) {
     try {
       console.log(tks[dataOwner]);
@@ -115,7 +115,11 @@ function filter(tks) {
         var edxRes = unserializedEDS[dataOwner].edxData.query(value.tkData);
   
         edxRes.forEach(function(value) {
-          records.push(value)
+          if (dataOwner in records) {
+            records[dataOwner].push(value)
+          } else {
+            records[dataOwner] = [value]
+          }
         });
       })
 
