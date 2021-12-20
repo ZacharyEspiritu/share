@@ -48,6 +48,16 @@ app.post('/getAnalystPublicKeys', async function(req, res) {
 
 });
 
+app.get('/getKeys', async function(req, res) {
+  var analystId = req.body.analystId;
+
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "X-Requested-With");
+  console.log("Returning keys")
+  res.status(200).send(encryptedDataKeys);
+
+});
+
 app.post('/postSetup', async function(req, res) {
   let dataOwnerId = req.body.dataOwnerId;
   encryptedDataKeys[dataOwnerId] = req.body.keys; 
@@ -60,11 +70,9 @@ app.post('/postSetup', async function(req, res) {
 });
 
 app.post('/postQuery', async function(req, res) {
-  let q = req.body.query;
+  let tks = req.body.query;
 
-  q = "Dietrich"
-
-  query(q)
+  query(JSON.parse(tks));
   console.log("Query success");
   res.status(200).send("test");
 });
@@ -76,21 +84,36 @@ function unserialize() {
     let emmFilter = PiBase.fromJSON(parsed.emmFilter);
     let edxLink = PiBase.fromJSON(parsed.edxLink);
     
-    unserializedEDS[dataOwner] = {edxData, emmFilter, edxLink}
+    unserializedEDS[dataOwner] = {
+      edxData, emmFilter, edxLink
+    }
   }
 }
 
-function query(q) {
+function query(tks) {
 
   // if unserialized empty
   unserialize()
 
-  filter(q)
+  filter(tks)
 }
 
-function filter() {
+function filter(tks) {
+  console.log("FILTER")
   for (dataOwner in unserializedEDS) {
+    console.log('dataowner', dataOwner)
+    try {
+      let stk = PiBase.formatToken(Buffer.from(tks[dataOwner].labelKey.data), Buffer.from(tks[dataOwner].valueKey.data))
+      // console.log(tks[dataOwner])
+      console.log("STK", stk)
+      let result = unserializedEDS[dataOwner].emmFilter.query(stk);
+      console.log("query result", result);
 
+    } catch (e) {
+      console.log('error', e)
+      continue
+    }
+  
   }
 
 }

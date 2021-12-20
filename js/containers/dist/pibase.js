@@ -36,6 +36,12 @@ class PiBase {
             entries: new Map(parsedJson.entries),
         });
     }
+
+
+    static formatToken(labelKey, valueKey) {
+        return new PiBaseSearchToken(labelKey, valueKey)
+    }
+
     /**
      * Encrypts the given multimap instance using the PiBase scheme and
      * stores the encrypted result in the calling PiBase instance.
@@ -98,6 +104,7 @@ class PiBase {
             const encryptedValue = this.entries.get(encryptedLabel);
             if (encryptedValue) {
                 if (this.isResponseRevealing && searchToken.valueKey) {
+                    console.log("SEARCH TOKEN", searchToken.valueKey)
                     const plaintextValue = JSON.parse((0, simplecrypto_1.symmetricDecrypt)(searchToken.valueKey, encryptedValue));
                     result.add(plaintextValue);
                 }

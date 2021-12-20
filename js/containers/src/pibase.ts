@@ -45,6 +45,10 @@ export default class PiBase<K, V> {
         })
     }
 
+    static formatToken(labelKey: Buffer, valueKey?: Buffer|undefined) {
+        return new PiBaseSearchToken(labelKey, valueKey)
+    }
+
     /**
      * Encrypts the given multimap instance using the PiBase scheme and
      * stores the encrypted result in the calling PiBase instance.
@@ -113,6 +117,7 @@ export default class PiBase<K, V> {
             const encryptedValue = this.entries.get(encryptedLabel)
             if (encryptedValue) {
                 if (this.isResponseRevealing && searchToken.valueKey) {
+                    console.log(searchToken.valueKey)
                     const plaintextValue = JSON.parse(symmetricDecrypt(searchToken.valueKey, encryptedValue))
                     result.add((plaintextValue as string))
                 } else {

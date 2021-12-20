@@ -303,7 +303,9 @@ async function setup_dataowner() {
             // We need to convert the MM^filter label to a string since
             // Map.get (which Multimap.get is implemented with) works off of
             // object identity, not equality.
-            mmFilter.set(String({ columnName, columnValue }), { tkData, tkLink })
+            // console.log(JSON.stringify({ columnName, columnValue }));
+            // mmFilter.set(JSON.stringify({ columnName, columnValue }), { tkData, tkLink })
+            mmFilter.set(columnValue, { tkData, tkLink })
         }
     }
 
@@ -331,11 +333,15 @@ async function setup_dataowner() {
 
     axios.post(SERVER_ADDR + '/postSetup', {
         "dataOwnerId": dataOwnerId.toString(),
-        "keys": JSON.stringify({"structure": "some hex values!"}),
+        "keys": key,
         "eds": JSON.stringify(eds)
     }).then((res) => {
-        console.log(res.data)
+        console.log("Sent EDS & Keys")
     });
+
+    var tk = PiBase.token(keyFilter, "Dietrich");
+
+    emmFilter.query(tk)
 
     // TODO(zespirit): Missing PKE encryption here.
     // TODO(zespirit): Send serializedEds to the server here.
@@ -414,11 +420,43 @@ async function setup_dataowner() {
 }
 
 function query_analyst() {
-    axios.post(SERVER_ADDR + '/postQuery', {
-        "query": "test"
-    }).then((res) => {
-        console.log(res.data)
+
+    let tokens = {}
+    axios.get(SERVER_ADDR + '/getKeys', {
+        "analystId": "analyst"}).then((res) => {
+
+            let keys = res.data;
+
+            for (let dataOwner in keys) {
+                let k = keys[dataOwner].keyFilter.data;
+
+                // var tk = PiBase.token(k, JSON.stringify({
+                //     "columnName": "LAST_NAME",
+                //     "columnValue": "Dietrich"
+                // }));
+
+                var tk = PiBase.token(k, "Dietrich");
+
+                tokens[dataOwner] = tk;
+
+                console.log("TK", tk)
+
+            }
+
+
+            axios.post(SERVER_ADDR + '/postQuery', {
+              "query": JSON.stringify(tokens)
+            }).then((res) => {
+                console.log(res.data)
+            });
+
+
+   
+
+
     });
+
+
 
 }
 
