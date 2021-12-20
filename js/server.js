@@ -72,9 +72,9 @@ app.post('/postSetup', async function(req, res) {
 app.post('/postQuery', async function(req, res) {
   let tks = req.body.query;
 
-  query(JSON.parse(tks));
+  const records = query(JSON.parse(tks));
   console.log("Query success");
-  res.status(200).send("test");
+  res.status(200).send(JSON.stringify(records));
 });
 
 function unserialize() {
@@ -95,20 +95,28 @@ function query(tks) {
   // if unserialized empty
   unserialize()
 
-  filter(tks)
+  var records = filter(tks);
+
+  return records;
+
 }
 
 function filter(tks) {
+  var records = []
   for (dataOwner in unserializedEDS) {
     try {
-      let stk = PiBase.formatToken(Buffer.from(tks[dataOwner].labelKey.data), Buffer.from(tks[dataOwner].valueKey.data))
-      let result = unserializedEDS[dataOwner].emmFilter.query(stk);
+      console.log(tks[dataOwner]);
+
+      let result = unserializedEDS[dataOwner].emmFilter.query(tks[dataOwner]);
       
       result.forEach(function(value) {
-        // console.log("value", value.tkData)
-        // let labelKey = Buffer.from(value.tkData.labelKey.data)
-        // console.log("labelkey", labelKey)
-        // unserializedEDS[dataOwner].edxData.query(labelKey);
+        console.log("value", value.tkData)
+
+        var edxRes = unserializedEDS[dataOwner].edxData.query(value.tkData);
+  
+        edxRes.forEach(function(value) {
+          records.push(value)
+        });
       })
 
 
@@ -118,6 +126,8 @@ function filter(tks) {
     }
   
   }
+
+  return records;
 
 }
 
