@@ -50,6 +50,10 @@ export default class PiBase<K, V> {
      * PiBase.resolve.
      */
     query(searchToken: PiBaseSearchToken): Set<string | Ciphertext>;
+    /**
+     * Decrypts the given set of ciphertexts as returned by a call to
+     * PiBase.query on a response-hiding PiBase instance.
+     */
     static resolve(key: string, ciphertexts: Set<Ciphertext>): Set<string>;
 }
 export {};

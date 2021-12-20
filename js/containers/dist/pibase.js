@@ -115,6 +115,10 @@ class PiBase {
         }
         return result;
     }
+    /**
+     * Decrypts the given set of ciphertexts as returned by a call to
+     * PiBase.query on a response-hiding PiBase instance.
+     */
     static resolve(key, ciphertexts) {
         const valueKey = (0, simplecrypto_1.hkdf)(key, "value");
         const result = new Set();
