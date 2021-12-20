@@ -60,9 +60,12 @@ export default class PiBase<K, V> {
         this.entries = new Map()
 
         const key = secureRandom(32)
+        let valueKey = hkdf(key, "value")
         for (const keyword of map.keys()) {
             const labelKey = hkdf(key, keyword + "label")
-            const valueKey = hkdf(key, keyword + "value")
+            if (this.isResponseRevealing) {
+                valueKey = hkdf(key, keyword + "value")
+            }
             let counter = 0
 
             if (map instanceof Map) {
@@ -128,7 +131,20 @@ export default class PiBase<K, V> {
                 break
             }
         }
+        return result
+    }
 
+    /**
+     * Decrypts the given set of ciphertexts as returned by a call to
+     * PiBase.query on a response-hiding PiBase instance.
+     */
+    static resolve(key: string, ciphertexts: Set<Ciphertext>): Set<string> {
+        const valueKey = hkdf(key, "value")
+        const result = new Set<string>()
+        for (const ciphertext of ciphertexts) {
+            const plaintext = JSON.parse(symmetricDecrypt(valueKey, ciphertext))
+            result.add((plaintext as string))
+        }
         return result
     }
 }

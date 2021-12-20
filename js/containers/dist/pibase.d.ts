@@ -50,5 +50,6 @@ export default class PiBase<K, V> {
      * PiBase.resolve.
      */
     query(searchToken: PiBaseSearchToken): Set<string | Ciphertext>;
+    static resolve(key: string, ciphertexts: Set<Ciphertext>): Set<string>;
 }
 export {};
