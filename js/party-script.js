@@ -301,7 +301,8 @@ async function setup_dataowner() {
             // We need to convert the MM^filter label to a string since
             // Map.get (which Multimap.get is implemented with) works off of
             // object identity, not equality.
-            mmFilter.set(String({ columnName, columnValue }), { tkData, tkLink })
+            // console.log(JSON.stringify({ columnName, columnValue }));
+            mmFilter.set(JSON.stringify({ columnName, columnValue }), { tkData, tkLink })
         }
     }
 
@@ -329,10 +330,10 @@ async function setup_dataowner() {
 
     axios.post(SERVER_ADDR + '/postSetup', {
         "dataOwnerId": dataOwnerId.toString(),
-        "keys": JSON.stringify({"structure": "some hex values!"}),
+        "keys": key,
         "eds": JSON.stringify(eds)
     }).then((res) => {
-        console.log(res.data)
+        // console.log("Sent EDS & Keys")
     });
 
     // TODO(zespirit): Missing PKE encryption here.
@@ -347,41 +348,77 @@ async function setup_dataowner() {
      * linking level do not result in collisions, as needed by the
      * functionality requirements for the ELS structure.
      */
-    logSetup("Initializing the ELS...")
-    const els = new ELS(columnNames, variables.NUM_LINK_LEVELS, linkingTags)
+    // logSetup("Initializing the ELS...")
+    // const els = new ELS(columnNames, variables.NUM_LINK_LEVELS, linkingTags)
 
-    /**
-     * Set up the AHE-encrypted values inside of the ELS object.
-     */
-    for (const columnName of variables.NUMERICAL) {
-        logSetup("Initializing ELS data for column", columnName)
-        const columnIndex = getColumnIndex(columnName, columnNames)
-        for (let linkLevel = 0; linkLevel < variables.NUM_LINK_LEVELS; linkLevel++) {
-            const eht = els.getTable(columnName, linkLevel)
-            for (const [linkTag, recordId, record] of recordsWithIdsAndTags) {
-                const subTag = linkTag[linkLevel]
-                const columnValue = record[columnIndex]
-                const numValue = BigInt(parseInt(columnValue))
-                eht.add(subTag, analystPublicKey.encrypt(numValue))
-            }
-            /**
-             * Populate the remaining empty spaces with encryptions of 0.
-             */
-            logSetup("Populating remaining empty spaces...")
-            eht.populateEmptySpaces(() => analystPublicKey.encrypt(0n))
-        }
-    }
-    logSetup("Done with ELS setup.")
+    // /**
+    //  * Set up the AHE-encrypted values inside of the ELS object.
+    //  */
+    // for (const columnName of variables.NUMERICAL) {
+    //     logSetup("Initializing ELS data for column", columnName)
+    //     const columnIndex = getColumnIndex(columnName, columnNames)
+    //     for (let linkLevel = 0; linkLevel < variables.NUM_LINK_LEVELS; linkLevel++) {
+    //         const eht = els.getTable(columnName, linkLevel)
+    //         for (const [linkTag, recordId, record] of recordsWithIdsAndTags) {
+    //             const subTag = linkTag[linkLevel]
+    //             const columnValue = record[columnIndex]
+    //             const numValue = BigInt(parseInt(columnValue))
+    //             eht.add(subTag, analystPublicKey.encrypt(numValue))
+    //         }
+    //         /**
+    //          * Populate the remaining empty spaces with encryptions of 0.
+    //          */
+    //         logSetup("Populating remaining empty spaces...")
+    //         eht.populateEmptySpaces(() => analystPublicKey.encrypt(0n))
+    //     }
+    // }
+    // logSetup("Done with ELS setup.")
 
     // TODO(zespirit): Send the ELS instance to the server.
 }
 
 function query_analyst() {
-    axios.post(SERVER_ADDR + '/postQuery', {
-        "query": "test"
-    }).then((res) => {
-        console.log(res.data)
+
+    let tokens = {}
+    axios.get(SERVER_ADDR + '/getKeys', {
+        "analystId": "analyst"}).then((res) => {
+
+            let keys = res.data;
+
+            for (let dataOwner in keys) {
+
+                let k = keys[dataOwner].keyFilter;
+
+                var tk = PiBase.token(k, JSON.stringify({
+                    "columnName": "LAST_NAME",
+                    "columnValue": "Dietrich"
+                }));
+
+
+                tokens[dataOwner] = tk;
+            }
+
+
+            axios.post(SERVER_ADDR + '/postQuery', {
+              "query": JSON.stringify(tokens)
+            }).then((res) => {
+
+                for (let dataOwner in keys) {
+                    let k = keys[dataOwner].keyData
+
+                    let data = (res.data[dataOwner])
+                    let plaintext = PiBase.resolve(k, data)
+                    console.log(plaintext)   
+                }
+            });
+
+
+   
+
+
     });
+
+
 
 }
 

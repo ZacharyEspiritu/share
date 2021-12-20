@@ -48,6 +48,16 @@ app.post('/getAnalystPublicKeys', async function(req, res) {
 
 });
 
+app.get('/getKeys', async function(req, res) {
+  var analystId = req.body.analystId;
+
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "X-Requested-With");
+  console.log("Returning keys")
+  res.status(200).send(encryptedDataKeys);
+
+});
+
 app.post('/postSetup', async function(req, res) {
   let dataOwnerId = req.body.dataOwnerId;
   encryptedDataKeys[dataOwnerId] = req.body.keys; 
@@ -60,13 +70,11 @@ app.post('/postSetup', async function(req, res) {
 });
 
 app.post('/postQuery', async function(req, res) {
-  let q = req.body.query;
+  let tks = req.body.query;
 
-  q = "Dietrich"
-
-  query(q)
+  const records = query(JSON.parse(tks));
   console.log("Query success");
-  res.status(200).send("test");
+  res.status(200).send(JSON.stringify(records));
 });
 
 function unserialize() {
@@ -76,22 +84,54 @@ function unserialize() {
     let emmFilter = PiBase.fromJSON(parsed.emmFilter);
     let edxLink = PiBase.fromJSON(parsed.edxLink);
     
-    unserializedEDS[dataOwner] = {edxData, emmFilter, edxLink}
+    unserializedEDS[dataOwner] = {
+      edxData, emmFilter, edxLink
+    }
   }
 }
 
-function query(q) {
+function query(tks) {
 
   // if unserialized empty
   unserialize()
 
-  filter(q)
+  var records = filter(tks);
+
+  return records;
+
 }
 
-function filter() {
+function filter(tks) {
+  var records = {}
   for (dataOwner in unserializedEDS) {
+    try {
+      console.log(tks[dataOwner]);
 
+      let result = unserializedEDS[dataOwner].emmFilter.query(tks[dataOwner]);
+      
+      result.forEach(function(value) {
+        console.log("value", value.tkData)
+
+        var edxRes = unserializedEDS[dataOwner].edxData.query(value.tkData);
+  
+        edxRes.forEach(function(value) {
+          if (dataOwner in records) {
+            records[dataOwner].push(value)
+          } else {
+            records[dataOwner] = [value]
+          }
+        });
+      })
+
+
+    } catch (e) {
+      console.log('error', e)
+      continue
+    }
+  
   }
+
+  return records;
 
 }
 
