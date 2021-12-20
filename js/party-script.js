@@ -8,11 +8,19 @@ const variables = require('./variables');
 
 const simplecrypto = require("simplecrypto");
 
+const { register, serialize, deserialize } = require('god-tier-serializer')
+
 const containers = require("containers");
 const Multimap = containers.Multimap;
 const PiBase = containers.PiBase;
 const EHT = containers.EHT;
 const ELS = containers.ELS;
+const StringableMap = containers.StringableMap;
+register(Multimap.prototype, 'Multimap')
+register(PiBase.prototype, 'PiBase')
+register(EHT.prototype, 'EHT')
+register(ELS.prototype, 'ELS')
+register(StringableMap.prototype, 'StringableMap')
 
 const debug = require("debug");
 const logSetup = debug('dataowner-setup');
@@ -120,63 +128,6 @@ function paillierProcess(processedFile, analystPublicKey) {
     //     var row = encryptedValues[i]
 
     // }
-
-}
-
-/**
- * A hash table of fixed size.
- */
-class EncryptedHashTable {
-    constructor(hashKey, size) {
-        this.values = [];
-        this.length = 0;
-        this.size = BigInt(size);
-        this.hashKey = hashKey;
-    }
-
-    add(key, value) {
-        const hash = EncryptedHashTable.calculateHash(this.hashKey, key);
-        if (!this.values.hasOwnProperty(hash)) {
-           this.values[hash] = {};
-        }
-        if (!this.values[hash].hasOwnProperty(key)) {
-           this.length++;
-        }
-        this.values[hash][key] = value;
-    }
-
-    static calculateHash(hashKey, key, tableSize) {
-        return simplecrypto.hmac(hashKey, key).readBigInt64BE() % tableSize;
-    }
-
-    static pickHashKeyWithNoCollisions(lst, tableSize) {
-        while (true) {
-            const hashKey = simplecrypto.secureRandom(32)
-            const collisionTable = {}
-
-            let recordCount = 0
-            let hadCollision = false
-
-            // TODO(zespirit): Needs to account for linking levels
-            for (const elt of lst) {
-                recordCount++
-                let hash = EncryptedHashTable.calculateHash(hashKey, elt, tableSize)
-                if (collisionTable.hasOwnProperty(hash)) {
-                    console.log(
-                        "Collision at", hash, "after", recordCount,
-                        "records out of", lst.length, "for hash table of size",
-                        tableSize)
-                    hadCollision = true
-                    break
-                }
-                collisionTable[hash] = true
-            }
-
-            if (!hadCollision) {
-                return hashKey
-            }
-        }
-    }
 }
 
 function getColumnIndex(columnName, columnNames) {
@@ -325,7 +276,11 @@ async function setup_dataowner() {
     /**
      * Serialize the encrypted structures.
      */
-     const eds = { edxData, edxLink, emmFilter }
+    const eds = { edxData, edxLink, emmFilter }
+    const serializedEds = serialize(eds)
+    console.log("serialized", serializedEds)
+    const deserializedEds = deserialize(serializedEds)
+    console.log("deserialized", deserializedEds)
 
     axios.post(SERVER_ADDR + '/postSetup', {
         "dataOwnerId": dataOwnerId.toString(),
@@ -354,9 +309,9 @@ async function setup_dataowner() {
      * Set up the AHE-encrypted values inside of the ELS object.
      */
     for (const columnName of variables.NUMERICAL) {
-        logSetup("Initializing ELS data for column", columnName)
         const columnIndex = getColumnIndex(columnName, columnNames)
         for (let linkLevel = 0; linkLevel < variables.NUM_LINK_LEVELS; linkLevel++) {
+            logSetup("Initializing ELS data for column", columnName, "at level", linkLevel)
             const eht = els.getTable(columnName, linkLevel)
             for (const [linkTag, recordId, record] of recordsWithIdsAndTags) {
                 const subTag = linkTag[linkLevel]
@@ -367,7 +322,7 @@ async function setup_dataowner() {
             /**
              * Populate the remaining empty spaces with encryptions of 0.
              */
-            logSetup("Populating remaining empty spaces...")
+            logSetup("Populating remaining empty spaces (this might take a while)...")
             eht.populateEmptySpaces(() => analystPublicKey.encrypt(0n))
         }
     }
