@@ -1,3 +1,5 @@
 import Multimap from "./multimap";
 import PiBase from "./pibase";
-export { Multimap, PiBase };
+import EHT from "./eht";
+import ELS from "./els";
+export { Multimap, PiBase, EHT, ELS };

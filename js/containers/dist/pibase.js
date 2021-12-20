@@ -31,19 +31,11 @@ class PiBase {
      */
     static fromJSON(json) {
         const parsedJson = JSON.parse(json);
-
-
         return Object.assign(new PiBase(), {
             isResponseRevealing: parsedJson.isResponseRevealing,
             entries: new Map(parsedJson.entries),
         });
     }
-
-
-    static formatToken(labelKey, valueKey) {
-        return new PiBaseSearchToken(labelKey, valueKey)
-    }
-
     /**
      * Encrypts the given multimap instance using the PiBase scheme and
      * stores the encrypted result in the calling PiBase instance.
@@ -59,13 +51,13 @@ class PiBase {
             let counter = 0;
             if (map instanceof Map) {
                 const value = map.get(keyword);
-                const encryptedLabel = (0, simplecrypto_1.hmac)(labelKey, counter.toString()).toString();
+                const encryptedLabel = (0, simplecrypto_1.hmac)(labelKey, counter.toString());
                 const encryptedValue = (0, simplecrypto_1.symmetricEncrypt)(valueKey, JSON.stringify(value));
                 this.entries.set(encryptedLabel, encryptedValue);
             }
             else { // (map instanceof Multimap)
                 for (const value of map.get(keyword)) {
-                    const encryptedLabel = (0, simplecrypto_1.hmac)(labelKey, counter.toString()).toString();
+                    const encryptedLabel = (0, simplecrypto_1.hmac)(labelKey, counter.toString());
                     const encryptedValue = (0, simplecrypto_1.symmetricEncrypt)(valueKey, JSON.stringify(value));
                     counter += 1;
                     this.entries.set(encryptedLabel, encryptedValue);
@@ -82,10 +74,10 @@ class PiBase {
         const labelKey = (0, simplecrypto_1.hkdf)(key, keyword + "label");
         if (isResponseRevealing) {
             const valueKey = (0, simplecrypto_1.hkdf)(key, keyword + "value");
-            return new PiBaseSearchToken(labelKey, valueKey);
+            return { labelKey, valueKey };
         }
         else {
-            return new PiBaseSearchToken(labelKey);
+            return { labelKey };
         }
     }
     /**
@@ -102,18 +94,9 @@ class PiBase {
         const result = new Set();
         let counter = 0;
         while (true) {
-            const encryptedLabel = (0, simplecrypto_1.hmac)(searchToken.labelKey, counter.toString()).toString();
+            const encryptedLabel = (0, simplecrypto_1.hmac)(searchToken.labelKey, counter.toString());
             const encryptedValue = this.entries.get(encryptedLabel);
-
             if (encryptedValue) {
-
-                if ("type" in encryptedValue["iv"]) {
-                    let iv = Buffer.from(encryptedValue.iv.data);
-                    let ct = Buffer.from(encryptedValue.ct.data);
-                    encryptedValue.iv = iv
-                    encryptedValue.ct = ct
-                }
-
                 if (this.isResponseRevealing && searchToken.valueKey) {
                     const plaintextValue = JSON.parse((0, simplecrypto_1.symmetricDecrypt)(searchToken.valueKey, encryptedValue));
                     result.add(plaintextValue);
@@ -131,9 +114,3 @@ class PiBase {
     }
 }
 exports.default = PiBase;
-class PiBaseSearchToken {
-    constructor(labelKey, valueKey) {
-        this.labelKey = labelKey;
-        this.valueKey = valueKey;
-    }
-}

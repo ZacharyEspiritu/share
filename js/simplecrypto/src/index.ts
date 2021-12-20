@@ -2,36 +2,40 @@
 
 const crypto = require("crypto")
 
-export function hmac(key: string|Buffer, value: string): Buffer {
-    return crypto.createHmac("sha256", Buffer.from(key))
+export const STRING_ENCODING = 'base64'
+
+export function hmac(key: string, value: string): string {
+    return crypto.createHmac("sha256", Buffer.from(key, STRING_ENCODING))
         .update(Buffer.from(value))
-        .digest()
+        .digest().toString(STRING_ENCODING)
 }
 
-export function hkdf(key: string|Buffer, value: string): Buffer {
+export function hkdf(key: string, value: string): string {
     return hmac(key, value)
 }
 
-export function secureRandom(numBytes: number): Buffer {
-    return crypto.randomBytes(numBytes)
+export function secureRandom(numBytes: number): string {
+    return crypto.randomBytes(numBytes).toString(STRING_ENCODING)
 }
 
 export type Ciphertext = {
-    iv: Buffer
-    ct: Buffer
+    iv: string
+    ct: string
 }
 
-export function symmetricEncrypt(key: string|Buffer, plaintext: string): Ciphertext {
-    const iv = secureRandom(16)
-    const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(key), iv)
-    let ct = cipher.update(plaintext)
-    ct = Buffer.concat([ct, cipher.final()])
-    return { iv, ct }
+export function symmetricEncrypt(key: string, plaintext: string): Ciphertext {
+    const iv = crypto.randomBytes(16)
+    const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(key, STRING_ENCODING), iv)
+    const ct = Buffer.concat([
+        cipher.update(Buffer.from(plaintext)),
+        cipher.final()
+    ])
+    return { iv: iv.toString(STRING_ENCODING), ct: ct.toString(STRING_ENCODING) }
 }
 
-export function symmetricDecrypt(key: string|Buffer, ciphertext: Ciphertext): string {
-    const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(key), ciphertext.iv)
-    let decrypted = decipher.update(ciphertext.ct)
+export function symmetricDecrypt(key: string, ciphertext: Ciphertext): string {
+    const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(key, STRING_ENCODING), Buffer.from(ciphertext.iv, STRING_ENCODING))
+    let decrypted = decipher.update(Buffer.from(ciphertext.ct, STRING_ENCODING))
     decrypted = Buffer.concat([decrypted, decipher.final()])
     return decrypted.toString()
 }
@@ -61,17 +65,16 @@ export function pkeKeyGen(): PKEKey {
     return { publicKey, privateKey }
 }
 
-export function pkeEncrypt(publicKey: PKEPublicKey, plaintext: string): Buffer {
+export function pkeEncrypt(publicKey: PKEPublicKey, plaintext: string): string {
     return crypto.publicEncrypt({
         key: publicKey,
         padding: crypto.constants.RSA_PKCS1_PADDING,
-    }, Buffer.from(plaintext));
+    }, Buffer.from(plaintext)).toString(STRING_ENCODING);
 }
 
-export function pkeDecrypt(privateKey: PKEPrivateKey, ciphertext: Buffer): string {
-    const decrypted = crypto.privateDecrypt({
+export function pkeDecrypt(privateKey: PKEPrivateKey, ciphertext: string): string {
+    return crypto.privateDecrypt({
         key: privateKey,
         padding: crypto.constants.RSA_PKCS1_PADDING,
-    }, ciphertext);
-    return decrypted.toString();
+    }, Buffer.from(ciphertext, STRING_ENCODING)).toString();
 }

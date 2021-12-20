@@ -32,6 +32,10 @@ class Multimap {
             }
         }
     }
+    /**
+     * Returns a JSON blob representing the serialized form of the
+     * calling Multimap instance.
+     */
     toJSON() {
         return JSON.stringify(this.map);
     }
