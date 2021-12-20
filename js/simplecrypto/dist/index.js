@@ -36,7 +36,7 @@ function symmetricDecrypt(key, ciphertext) {
 exports.symmetricDecrypt = symmetricDecrypt;
 function pkeKeyGen() {
     const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
-        modulusLength: 4096,
+        modulusLength: 2048,
         publicKeyEncoding: {
             type: 'pkcs1',
             format: 'pem',
@@ -45,7 +45,7 @@ function pkeKeyGen() {
             type: 'pkcs1',
             format: 'pem',
             cipher: 'aes-256-cbc',
-            passphrase: '',
+            passphrase: 'stub',
         },
     });
     return { publicKey, privateKey };
@@ -62,6 +62,7 @@ function pkeDecrypt(privateKey, ciphertext) {
     return crypto.privateDecrypt({
         key: privateKey,
         padding: crypto.constants.RSA_PKCS1_PADDING,
+        passphrase: 'stub',
     }, Buffer.from(ciphertext, exports.STRING_ENCODING)).toString();
 }
 exports.pkeDecrypt = pkeDecrypt;

@@ -50,7 +50,7 @@ export type PKEKey = {
 
 export function pkeKeyGen(): PKEKey {
     const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
-        modulusLength: 4096,
+        modulusLength: 2048,
         publicKeyEncoding: {
             type: 'pkcs1',
             format: 'pem',
@@ -59,7 +59,7 @@ export function pkeKeyGen(): PKEKey {
             type: 'pkcs1',
             format: 'pem',
             cipher: 'aes-256-cbc',
-            passphrase: '',
+            passphrase: 'stub',
         },
     })
     return { publicKey, privateKey }
@@ -76,5 +76,6 @@ export function pkeDecrypt(privateKey: PKEPrivateKey, ciphertext: string): strin
     return crypto.privateDecrypt({
         key: privateKey,
         padding: crypto.constants.RSA_PKCS1_PADDING,
+        passphrase: 'stub',
     }, Buffer.from(ciphertext, STRING_ENCODING)).toString();
 }
