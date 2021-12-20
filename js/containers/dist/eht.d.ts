@@ -1,4 +1,3 @@
-/// <reference types="node" />
 /**
  * An implementation of the EHT object from the SHARE paper.
  */
@@ -6,7 +5,7 @@ export default class EHT<T> {
     #private;
     values: Array<T>;
     tableSize: number;
-    hashKey: Buffer;
+    hashKey: string;
     /**
      * Constructs an EHT instance with the given tableSize and hashKey.
      *
@@ -14,7 +13,7 @@ export default class EHT<T> {
      * strings to be included in the hash domain; otherwise, collisions may
      * occur.
      */
-    constructor(tableSize: number, hashKey: Buffer);
+    constructor(tableSize: number, hashKey: string);
     /**
      * Adds the given (key, value) pair to the EHT.
      */
@@ -31,10 +30,10 @@ export default class EHT<T> {
      * by an application of defaultThunk.
      */
     populateEmptySpaces(defaultThunk: () => T): void;
-    static pickHashKey(lst: Iterable<string>, tableSize: number): Buffer;
+    static pickHashKey(lst: Iterable<string>, tableSize: number): string;
     toJSON(): {
         values: T[];
         tableSize: number;
-        hashKey: Buffer;
+        hashKey: string;
     };
 }

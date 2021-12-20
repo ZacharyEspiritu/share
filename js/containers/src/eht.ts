@@ -1,6 +1,6 @@
 'use strict'
 
-import { hmac, secureRandom } from "simplecrypto"
+import { hmac, secureRandom, STRING_ENCODING } from "simplecrypto"
 
 /**
  * The number of bytes needed to represent a big_uint64 type in an
@@ -14,7 +14,7 @@ const BIG_UINT64_SIZE = 8
 export default class EHT<T> {
     values: Array<T>
     tableSize: number
-    hashKey: Buffer
+    hashKey: string
 
     /**
      * Constructs an EHT instance with the given tableSize and hashKey.
@@ -23,7 +23,7 @@ export default class EHT<T> {
      * strings to be included in the hash domain; otherwise, collisions may
      * occur.
      */
-    constructor(tableSize: number, hashKey: Buffer) {
+    constructor(tableSize: number, hashKey: string) {
         this.values = Array(tableSize)
         this.tableSize = tableSize
         this.hashKey = hashKey
@@ -59,13 +59,13 @@ export default class EHT<T> {
         }
     }
 
-    static #calculateHash(hashKey: Buffer, key: string, tableSize: number): number {
-        return hmac(hashKey, key).readUInt32BE() % tableSize;
+    static #calculateHash(hashKey: string, key: string, tableSize: number): number {
+        return Buffer.from(hmac(hashKey, key), STRING_ENCODING).readUInt32BE() % tableSize;
     }
 
-    static pickHashKey(lst: Iterable<string>, tableSize: number) {
+    static pickHashKey(lst: Iterable<string>, tableSize: number): string {
         while (true) {
-            const hashKey: Buffer = secureRandom(32)
+            const hashKey: string = secureRandom(32)
             const collisionTable: Set<number> = new Set()
 
             let recordCount = 0

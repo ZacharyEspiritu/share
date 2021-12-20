@@ -4,6 +4,11 @@ import Multimap from "./multimap"
 
 import { hmac, hkdf, secureRandom, symmetricEncrypt, symmetricDecrypt, Ciphertext } from "simplecrypto"
 
+type PiBaseSearchToken = {
+    labelKey: string
+    valueKey?: string
+}
+
 /**
  * Simple implementation of \Pi_{bas}.
  *
@@ -51,7 +56,7 @@ export default class PiBase<K, V> {
      *
      * Returns the secret key.
      */
-    setup(map: Multimap<K, V>|Map<K, V>): Buffer {
+    setup(map: Multimap<K, V>|Map<K, V>): string {
         this.entries = new Map()
 
         const key = secureRandom(32)
@@ -62,14 +67,14 @@ export default class PiBase<K, V> {
 
             if (map instanceof Map) {
                 const value = map.get(keyword);
-                const encryptedLabel = hmac(labelKey, counter.toString()).toString()
-                const encryptedValue = symmetricEncrypt(valueKey, JSON.stringify(value))
+                const encryptedLabel = hmac(labelKey, counter.toString())
+                const encryptedValue = symmetricEncrypt(valueKey, value)
                 this.entries.set(encryptedLabel, encryptedValue)
             }
             else { // (map instanceof Multimap)
                 for (const value of map.get(keyword)) {
-                    const encryptedLabel = hmac(labelKey, counter.toString()).toString()
-                    const encryptedValue = symmetricEncrypt(valueKey, JSON.stringify(value))
+                    const encryptedLabel = hmac(labelKey, counter.toString())
+                    const encryptedValue = symmetricEncrypt(valueKey, value)
                     counter += 1
                     this.entries.set(encryptedLabel, encryptedValue)
                 }
@@ -84,14 +89,14 @@ export default class PiBase<K, V> {
      * Computes a PiBase search token over the given secret key and
      * keyword.
      */
-    static token(key: Buffer, keyword: string, isResponseRevealing: boolean = true): PiBaseSearchToken {
+    static token(key: string, keyword: string, isResponseRevealing: boolean = true): PiBaseSearchToken {
         const labelKey = hkdf(key, keyword + "label")
 
         if (isResponseRevealing) {
             const valueKey = hkdf(key, keyword + "value")
-            return new PiBaseSearchToken(labelKey, valueKey)
+            return { labelKey, valueKey }
         } else {
-            return new PiBaseSearchToken(labelKey)
+            return { labelKey }
         }
     }
 
@@ -109,11 +114,11 @@ export default class PiBase<K, V> {
         const result = new Set<string|Ciphertext>()
         let counter = 0
         while (true) {
-            const encryptedLabel = hmac(searchToken.labelKey, counter.toString()).toString()
+            const encryptedLabel = hmac(searchToken.labelKey, counter.toString())
             const encryptedValue = this.entries.get(encryptedLabel)
             if (encryptedValue) {
                 if (this.isResponseRevealing && searchToken.valueKey) {
-                    const plaintextValue = JSON.parse(symmetricDecrypt(searchToken.valueKey, encryptedValue))
+                    const plaintextValue = symmetricDecrypt(searchToken.valueKey, encryptedValue)
                     result.add((plaintextValue as string))
                 } else {
                     result.add((encryptedValue as Ciphertext))
@@ -125,15 +130,5 @@ export default class PiBase<K, V> {
         }
 
         return result
-    }
-}
-
-class PiBaseSearchToken {
-    labelKey: Buffer
-    valueKey?: Buffer
-
-    constructor(labelKey: Buffer, valueKey?: Buffer|undefined) {
-        this.labelKey = labelKey
-        this.valueKey = valueKey
     }
 }
