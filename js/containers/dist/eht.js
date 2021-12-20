@@ -87,5 +87,5 @@ class EHT {
 }
 exports.default = EHT;
 _a = EHT, _EHT_calculateHash = function _EHT_calculateHash(hashKey, key, tableSize) {
-    return Buffer.from((0, simplecrypto_1.hmac)(hashKey, key), 'utf8').readUInt32BE() % tableSize;
+    return Buffer.from((0, simplecrypto_1.hmac)(hashKey, key), simplecrypto_1.STRING_ENCODING).readUInt32BE() % tableSize;
 };

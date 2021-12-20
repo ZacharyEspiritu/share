@@ -1,5 +1,9 @@
 import Multimap from "./multimap";
 import { Ciphertext } from "simplecrypto";
+declare type PiBaseSearchToken = {
+    labelKey: string;
+    valueKey?: string;
+};
 /**
  * Simple implementation of \Pi_{bas}.
  *
@@ -46,10 +50,5 @@ export default class PiBase<K, V> {
      * PiBase.resolve.
      */
     query(searchToken: PiBaseSearchToken): Set<string | Ciphertext>;
-}
-declare class PiBaseSearchToken {
-    labelKey: string;
-    valueKey?: string;
-    constructor(labelKey: string, valueKey?: string);
 }
 export {};

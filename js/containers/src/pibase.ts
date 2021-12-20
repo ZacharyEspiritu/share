@@ -68,13 +68,13 @@ export default class PiBase<K, V> {
             if (map instanceof Map) {
                 const value = map.get(keyword);
                 const encryptedLabel = hmac(labelKey, counter.toString())
-                const encryptedValue = symmetricEncrypt(valueKey, value)
+                const encryptedValue = symmetricEncrypt(valueKey, JSON.stringify(value))
                 this.entries.set(encryptedLabel, encryptedValue)
             }
             else { // (map instanceof Multimap)
                 for (const value of map.get(keyword)) {
                     const encryptedLabel = hmac(labelKey, counter.toString())
-                    const encryptedValue = symmetricEncrypt(valueKey, value)
+                    const encryptedValue = symmetricEncrypt(valueKey, JSON.stringify(value))
                     counter += 1
                     this.entries.set(encryptedLabel, encryptedValue)
                 }
@@ -118,7 +118,7 @@ export default class PiBase<K, V> {
             const encryptedValue = this.entries.get(encryptedLabel)
             if (encryptedValue) {
                 if (this.isResponseRevealing && searchToken.valueKey) {
-                    const plaintextValue = symmetricDecrypt(searchToken.valueKey, encryptedValue)
+                    const plaintextValue = JSON.parse(symmetricDecrypt(searchToken.valueKey, encryptedValue))
                     result.add((plaintextValue as string))
                 } else {
                     result.add((encryptedValue as Ciphertext))
