@@ -45,9 +45,12 @@ class PiBase {
     setup(map) {
         this.entries = new Map();
         const key = (0, simplecrypto_1.secureRandom)(32);
+        let valueKey = (0, simplecrypto_1.hkdf)(key, "value");
         for (const keyword of map.keys()) {
             const labelKey = (0, simplecrypto_1.hkdf)(key, keyword + "label");
-            const valueKey = (0, simplecrypto_1.hkdf)(key, keyword + "value");
+            if (this.isResponseRevealing) {
+                valueKey = (0, simplecrypto_1.hkdf)(key, keyword + "value");
+            }
             let counter = 0;
             if (map instanceof Map) {
                 const value = map.get(keyword);
@@ -109,6 +112,19 @@ class PiBase {
             else {
                 break;
             }
+        }
+        return result;
+    }
+    /**
+     * Decrypts the given set of ciphertexts as returned by a call to
+     * PiBase.query on a response-hiding PiBase instance.
+     */
+    static resolve(key, ciphertexts) {
+        const valueKey = (0, simplecrypto_1.hkdf)(key, "value");
+        const result = new Set();
+        for (const ciphertext of ciphertexts) {
+            const plaintext = JSON.parse((0, simplecrypto_1.symmetricDecrypt)(valueKey, ciphertext));
+            result.add(plaintext);
         }
         return result;
     }

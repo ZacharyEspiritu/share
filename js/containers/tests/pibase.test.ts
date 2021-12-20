@@ -39,6 +39,32 @@ describe('PiBase with Multimap', () => {
     })
 })
 
+describe('PiBase with response-hiding properties', () => {
+    let pibase: PiBase
+    let multimap: Multimap
+
+    beforeEach(() => {
+        pibase = new PiBase(false)
+
+        multimap = new Multimap([
+            ["a", ["0", "1", "2"]],
+            ["b", ["3"]],
+            ["c", ["4", "5"]],
+        ])
+    })
+
+    it('should be queryable and return the correct result', async () => {
+        const key = pibase.setup(multimap)
+        expect(key).toBeDefined()
+
+        const token = PiBase.token(key, "a")
+        expect(token).toBeDefined()
+
+        const ciphertexts = pibase.query(token)
+        expect(PiBase.resolve(key, ciphertexts)).toEqual(new Set(["0", "1", "2"]))
+    })
+})
+
 describe('PiBase with Map', () => {
     let pibase: PiBase
     let map: Map
