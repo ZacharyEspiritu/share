@@ -31,6 +31,8 @@ class PiBase {
      */
     static fromJSON(json) {
         const parsedJson = JSON.parse(json);
+
+
         return Object.assign(new PiBase(), {
             isResponseRevealing: parsedJson.isResponseRevealing,
             entries: new Map(parsedJson.entries),
@@ -102,9 +104,17 @@ class PiBase {
         while (true) {
             const encryptedLabel = (0, simplecrypto_1.hmac)(searchToken.labelKey, counter.toString()).toString();
             const encryptedValue = this.entries.get(encryptedLabel);
+
             if (encryptedValue) {
+
+                if ("type" in encryptedValue["iv"]) {
+                    let iv = Buffer.from(encryptedValue.iv.data);
+                    let ct = Buffer.from(encryptedValue.ct.data);
+                    encryptedValue.iv = iv
+                    encryptedValue.ct = ct
+                }
+
                 if (this.isResponseRevealing && searchToken.valueKey) {
-                    console.log("SEARCH TOKEN", searchToken.valueKey)
                     const plaintextValue = JSON.parse((0, simplecrypto_1.symmetricDecrypt)(searchToken.valueKey, encryptedValue));
                     result.add(plaintextValue);
                 }

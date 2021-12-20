@@ -99,15 +99,18 @@ function query(tks) {
 }
 
 function filter(tks) {
-  console.log("FILTER")
   for (dataOwner in unserializedEDS) {
-    console.log('dataowner', dataOwner)
     try {
       let stk = PiBase.formatToken(Buffer.from(tks[dataOwner].labelKey.data), Buffer.from(tks[dataOwner].valueKey.data))
-      // console.log(tks[dataOwner])
-      console.log("STK", stk)
       let result = unserializedEDS[dataOwner].emmFilter.query(stk);
-      console.log("query result", result);
+      
+      result.forEach(function(value) {
+        // console.log("value", value.tkData)
+        // let labelKey = Buffer.from(value.tkData.labelKey.data)
+        // console.log("labelkey", labelKey)
+        // unserializedEDS[dataOwner].edxData.query(labelKey);
+      })
+
 
     } catch (e) {
       console.log('error', e)

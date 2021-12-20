@@ -304,8 +304,7 @@ async function setup_dataowner() {
             // Map.get (which Multimap.get is implemented with) works off of
             // object identity, not equality.
             // console.log(JSON.stringify({ columnName, columnValue }));
-            // mmFilter.set(JSON.stringify({ columnName, columnValue }), { tkData, tkLink })
-            mmFilter.set(columnValue, { tkData, tkLink })
+            mmFilter.set(JSON.stringify({ columnName, columnValue }), { tkData, tkLink })
         }
     }
 
@@ -339,9 +338,9 @@ async function setup_dataowner() {
         console.log("Sent EDS & Keys")
     });
 
-    var tk = PiBase.token(keyFilter, "Dietrich");
+    // var tk = PiBase.token(keyFilter, "Dietrich");
 
-    emmFilter.query(tk)
+    // emmFilter.query(tk)
 
     // TODO(zespirit): Missing PKE encryption here.
     // TODO(zespirit): Send serializedEds to the server here.
@@ -430,17 +429,13 @@ function query_analyst() {
             for (let dataOwner in keys) {
                 let k = keys[dataOwner].keyFilter.data;
 
-                // var tk = PiBase.token(k, JSON.stringify({
-                //     "columnName": "LAST_NAME",
-                //     "columnValue": "Dietrich"
-                // }));
+                var tk = PiBase.token(k, JSON.stringify({
+                    "columnName": "LAST_NAME",
+                    "columnValue": "Dietrich"
+                }));
 
-                var tk = PiBase.token(k, "Dietrich");
 
                 tokens[dataOwner] = tk;
-
-                console.log("TK", tk)
-
             }
 
 
