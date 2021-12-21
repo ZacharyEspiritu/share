@@ -334,58 +334,47 @@ async function setup_dataowner() {
     logSetup("All done!")
 }
 
-function query_analyst() {
+async function query_analyst() {
+    /**
+     * Get all of the keys previously uploaded by the data owners.
+     */
+    const getKeysRes = await axios.get(SERVER_ADDR + '/getKeys', { analystId: "analyst" })
+    const keys = getKeysRes.data
 
+    /**
+     * Generate the filter token list.
+     */
     let tokens = {}
-    axios.get(SERVER_ADDR + '/getKeys', {
-        "analystId": "analyst"}).then((res) => {
+    for (const dataOwner in keys) {
+        const k = keys[dataOwner].keyFilter;
+        var tk = PiBase.token(k, JSON.stringify({
+            "columnName": "LAST_NAME",
+            "columnValue": "Dietrich"
+        }))
+        tokens[dataOwner] = tk;
+    }
 
-            let keys = res.data;
+    /**
+     * Send the filter token list to the server.
+     */
+    const postQueryRes = await axios.post(
+        SERVER_ADDR + '/postQuery',
+        {
+            "query": serialize(tokens)
+        }
+    )
 
-            for (let dataOwner in keys) {
-
-                let k = keys[dataOwner].keyFilter;
-
-                console.log("test")
-                var tk = PiBase.token(k, JSON.stringify({
-                    "columnName": "LAST_NAME",
-                    "columnValue": "Dietrich"
-                }));
-                console.log("test2")
-
-
-                tokens[dataOwner] = tk;
-            }
-
-
-            console.log("tokens!")
-            console.log(tokens)
-            axios.post(SERVER_ADDR + '/postQuery', {
-              "query": serialize(tokens)
-            }).then((res) => {
-
-                console.log(res.data)
-
-                let deserialized = deserialize(res.data.response)
-                console.log(deserialized)
-
-                for (let dataOwner in keys) {
-                    let k = keys[dataOwner].keyData
-
-                    let data = (deserialized[dataOwner])
-                    let plaintext = PiBase.resolve(k, data)
-                    console.log(plaintext)   
-                }
-            });
-
-
-   
-
-
-    });
-
-
-
+    /**
+     * deserialized is a Set<Ciphertext>, so PiBase.resolve the results
+     * to determine the final plaintext response.
+     */
+    const deserialized = deserialize(postQueryRes.data.response)
+    for (let dataOwner in keys) {
+        let k = keys[dataOwner].keyData
+        let data = (deserialized[dataOwner])
+        let plaintext = PiBase.resolve(k, data)
+        console.log(plaintext)
+    }
 }
 
 if (party == DATAOWNER) {
