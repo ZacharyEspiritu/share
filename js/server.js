@@ -104,16 +104,21 @@ app.post('/postQuery', async function(req, res) {
 });
 
 function query(tks) {
-  var records = filter(tks);
+  [records, filterResults] = filter(tks);
+
+  link(filterResults);
+
   return records;
 }
 
 function filter(tks) {
   var records = {}
+
+  var filterResults = {}
   for (dataOwner in encryptedDataStructures) {
     try {
       let result = encryptedDataStructures[dataOwner].emmFilter.query(tks[dataOwner]);
-      console.log("result:", result)
+      filterResults[dataOwner] =  result
       result.forEach(function(value) {
         var edxRes = encryptedDataStructures[dataOwner].edxData.query(value.tkData);
         edxRes.forEach(function(value) {
@@ -129,12 +134,20 @@ function filter(tks) {
       continue
     }
   }
-  return records;
+  return [records, filterResults];
 }
 
-function link() {
-  var g = new jsgraphs.Graph(6);
-  for (dataOwner in encryptedDataStructures) {
-   
+function link(filterResults) {
+
+  for (dataOwner in filterResults) {
+    filterResults[dataOwner].forEach(function(tk) {
+      var linktag = encryptedDataStructures[dataOwner].edxLink.query(tk.tkLink);
+      console.log("LINKTAG", linktag)
+    })
   }
+
+  // var g = new jsgraphs.Graph(6);
+  // for (dataOwner in encryptedDataStructures) {
+   
+  // }
 }

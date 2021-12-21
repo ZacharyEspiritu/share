@@ -63,6 +63,66 @@ function readFile() {
     return [header, contents]
 }
 
+function readSecretKeysFromFile() {
+
+    const hexSk = JSON.parse(fs.readFileSync('keys/aheSk.pem',{encoding:'utf8', flag:'r'}));
+    const hexPk = hexSk.publicKey
+
+    // convert ahe public key
+    const bigIntPublicKey = {
+        n: bigintConversion.hexToBigint(hexPk.n),
+        g: bigintConversion.hexToBigint(hexPk.g),
+    }
+
+    const ahePk = new paillierBigint.PublicKey(bigIntPublicKey.n, bigIntPublicKey.g)
+
+    // convert ahe secret key
+    const bigIntSk = {
+        "lambda": bigintConversion.hexToBigint(hexSk.lambda),
+        "mu": bigintConversion.hexToBigint(hexSk.mu),
+        "_p": bigintConversion.hexToBigint(hexSk._p),
+        "_q": bigintConversion.hexToBigint(hexSk._q),
+        "publicKey": hexPk
+    }
+
+    let aheSk = new paillierBigint.PrivateKey(bigIntSk.lambda, bigIntSk.mu, ahePk, bigIntSk._p, bigIntSk._q);
+
+    // read in sk
+    const sk = fs.readFileSync('keys/sk.pem',{encoding:'utf8', flag:'r'});
+
+    // update analyst secret keys
+    analystSecretKeys = {
+        "aheSk": aheSk,
+        "sk": sk
+    }
+
+    return analystSecretKeys
+}
+
+function writeSecretKeysToFile(aheSk, sk, hexPublicKey) {
+
+    const hexSk = {
+        "lambda": bigintConversion.bigintToHex(aheSk.lambda),
+        "mu": bigintConversion.bigintToHex(aheSk.mu),
+        "_p": bigintConversion.bigintToHex(aheSk._p),
+        "_q": bigintConversion.bigintToHex(aheSk._q),
+        "publicKey": hexPublicKey
+    }
+
+    try {
+        fs.writeFileSync("keys/aheSK.pem", JSON.stringify(hexSk))
+    } catch (err) {
+        console.error(err)
+    }
+
+
+    try {
+        fs.writeFileSync("keys/sk.pem", JSON.stringify(sk))
+    } catch (err) {
+        console.error(err)
+    }
+}
+
 function init_analyst() {
     paillierBigint.generateRandomKeys(1024).then((analystKey) => {
         var hexPublicKey = {
@@ -73,6 +133,8 @@ function init_analyst() {
         var keypair = simplecrypto.pkeKeyGen()
 
         analystSecretKeys = {"aheSk": analystKey.privateKey, "sk": keypair.privateKey}
+
+        writeSecretKeysToFile(analystKey.privateKey, keypair.privateKey, hexPublicKey);
 
         axios.post(SERVER_ADDR + '/postAnalystPublicKeys', {
             "analystId": "analyst",
@@ -101,6 +163,27 @@ function zip(arrays) {
 }
 
 const cartesian = (...a) => a.reduce((a, b) => a.flatMap(d => b.map(e => [d, e].flat())));
+
+
+function formatDataForLinking(records) {
+    var linkLevels = [["LAST_NAME"], ["LAST_NAME","SOCIAL_SEC"]]; 
+
+    var formattedData = [];
+
+    for (let rowIndex = 0; rowIndex < records.length; rowIndex++) {
+        var row = []
+        for (let i = 0; i < linkLevels.length; i++) {
+            var linkLevelStr = ""
+            for (let columnIndex in linkLevels[i]) {
+                linkLevelStr = linkLevelStr + records[rowIndex][columnIndex]
+                // linkLevelData.push(records[rowIndex][columnIndex])
+            }
+            row.push(linkLevelStr)
+        }
+        formattedData.push(row)
+    }
+    return formattedData
+}
 
 async function setup_dataowner() {
     /**
@@ -137,11 +220,13 @@ async function setup_dataowner() {
      * correspondence to the record that they're associated with.
      */
     logSetup("Requesting linking tags from the OPRF server...")
+    let formattedData = formatDataForLinking(records)
     const oprfRequest = await axios.post(
         OPRF_ADDR + '/oprf',
-        { "input": JSON.stringify(records) }
+        { "input": JSON.stringify(formattedData) }
     )
-    const linkingTags = oprfRequest.data
+    const linkingTags = oprfRequest.data    
+
     logSetup("Received %d linking tags.", linkingTags.length)
 
     /**
@@ -197,7 +282,7 @@ async function setup_dataowner() {
     logSetup("Setting up MM^filter...")
     for (const [linkTag, recordId, record] of recordsWithIdsAndTags) {
         const tkData = PiBase.token(keyData, recordId, false)
-        const tkLink = PiBase.token(keyData, recordId, true)
+        const tkLink = PiBase.token(keyLink, recordId, true)
 
         // TODO(zespirit): We only want to iterate over columns in
         //                 X^filter. This currently just iterates over

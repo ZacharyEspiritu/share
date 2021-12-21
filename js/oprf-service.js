@@ -36,7 +36,7 @@ app.post('/oprf', async function(req,res) {
     row.forEach((value) => {
       var out = crypto.createHmac("sha256",
       new Buffer.from(KEY, 'hex'))
-      .update(new Buffer.from(JSON.stringify(row), 'utf-8'))
+      .update(new Buffer.from(JSON.stringify(value), 'utf-8'))
       .digest('hex');
       rowTags.push(out)
     });
