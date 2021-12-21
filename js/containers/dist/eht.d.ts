@@ -19,6 +19,10 @@ export default class EHT<T> {
      */
     add(key: string, value: T): void;
     /**
+     * Retrieves the value associated with the given key in the EHT.
+     */
+    get(key: string): T;
+    /**
      * Returns the size of the EHT.
      *
      * Note that this returns the number of entries allocated for the EHT,

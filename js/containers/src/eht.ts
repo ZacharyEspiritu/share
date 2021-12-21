@@ -38,6 +38,14 @@ export default class EHT<T> {
     }
 
     /**
+     * Retrieves the value associated with the given key in the EHT.
+     */
+    get(key: string): T {
+        const hash = EHT.#calculateHash(this.hashKey, key, this.tableSize)
+        return this.values[hash]
+    }
+
+    /**
      * Returns the size of the EHT.
      *
      * Note that this returns the number of entries allocated for the EHT,

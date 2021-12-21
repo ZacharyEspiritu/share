@@ -8,11 +8,19 @@ const variables = require('./variables');
 
 const simplecrypto = require("simplecrypto");
 
+const { register, serialize, deserialize } = require('god-tier-serializer')
+
 const containers = require("containers");
 const Multimap = containers.Multimap;
 const PiBase = containers.PiBase;
 const EHT = containers.EHT;
 const ELS = containers.ELS;
+const StringableMap = containers.StringableMap;
+register(Multimap.prototype, 'Multimap')
+register(PiBase.prototype, 'PiBase')
+register(EHT.prototype, 'EHT')
+register(ELS.prototype, 'ELS')
+register(StringableMap.prototype, 'StringableMap')
 
 const debug = require("debug");
 const logSetup = debug('dataowner-setup');
@@ -50,19 +58,13 @@ function readFile() {
         if (row.length > 1) {
             contents.push(row)
         }
-
-        // row.forEach(v => {
-        //     console.log(v)
-        // });
     }
     header = contents.shift()
     return [header, contents]
 }
 
 function init_analyst() {
-
     paillierBigint.generateRandomKeys(1024).then((analystKey) => {
-
         var hexPublicKey = {
             "n": bigintConversion.bigintToHex(analystKey.publicKey.n),
             "g": bigintConversion.bigintToHex(analystKey.publicKey.g)
@@ -83,102 +85,6 @@ function init_analyst() {
     });
 }
 
-function paillierProcess(processedFile, analystPublicKey) {
-
-    encryptedValues = []
-
-    for (var i in processedFile) {
-        var row = processedFile[i]
-
-        encryptedRow = []
-
-        for (var j in row) {
-            var value = bigintConversion.textToBigint(row[j]);
-            encryptedRow.push(value)
-        }
-
-        encryptedValues.push(encryptedRow);
-    }
-
-    encryptedSums = encryptedValues[0]
-
-
-    // add columns
-    for (let i = 1; i < encryptedValues.length; i++) {
-        for (let j in encryptedValues[i]) {
-            encryptedSums[j] = analystPublicKey.addition(encryptedSums[j], encryptedValues[i][j]);
-        }
-    }
-
-    return encryptedSums
-    // for (let i in encryptedSums) {
-
-        // console.log(analystPrivateKey.decrypt(encryptedSums[i]))
-    // }
-
-    // for (var i in encryptedValues) {
-    //     var row = encryptedValues[i]
-
-    // }
-
-}
-
-/**
- * A hash table of fixed size.
- */
-class EncryptedHashTable {
-    constructor(hashKey, size) {
-        this.values = [];
-        this.length = 0;
-        this.size = BigInt(size);
-        this.hashKey = hashKey;
-    }
-
-    add(key, value) {
-        const hash = EncryptedHashTable.calculateHash(this.hashKey, key);
-        if (!this.values.hasOwnProperty(hash)) {
-           this.values[hash] = {};
-        }
-        if (!this.values[hash].hasOwnProperty(key)) {
-           this.length++;
-        }
-        this.values[hash][key] = value;
-    }
-
-    static calculateHash(hashKey, key, tableSize) {
-        return simplecrypto.hmac(hashKey, key).readBigInt64BE() % tableSize;
-    }
-
-    static pickHashKeyWithNoCollisions(lst, tableSize) {
-        while (true) {
-            const hashKey = simplecrypto.secureRandom(32)
-            const collisionTable = {}
-
-            let recordCount = 0
-            let hadCollision = false
-
-            // TODO(zespirit): Needs to account for linking levels
-            for (const elt of lst) {
-                recordCount++
-                let hash = EncryptedHashTable.calculateHash(hashKey, elt, tableSize)
-                if (collisionTable.hasOwnProperty(hash)) {
-                    console.log(
-                        "Collision at", hash, "after", recordCount,
-                        "records out of", lst.length, "for hash table of size",
-                        tableSize)
-                    hadCollision = true
-                    break
-                }
-                collisionTable[hash] = true
-            }
-
-            if (!hadCollision) {
-                return hashKey
-            }
-        }
-    }
-}
-
 function getColumnIndex(columnName, columnNames) {
     const columnIndex = columnNames.indexOf(columnName)
     if (columnIndex == -1) {
@@ -193,6 +99,8 @@ function zip(arrays) {
         return arrays.map(function(array){return array[i]})
     });
 }
+
+const cartesian = (...a) => a.reduce((a, b) => a.flatMap(d => b.map(e => [d, e].flat())));
 
 async function setup_dataowner() {
     /**
@@ -319,26 +227,21 @@ async function setup_dataowner() {
     /**
      * Send the analyst the key.
      */
-    const key = { keyData, keyLink, keyFilter }
-    // const pkeEncryptedKey = simplecrypto.pkeEncrypt(key, JSON.stringify(key))
-    // TODO get the analyst key, send it to pkeEncryptedKey
+    const keys = { keyData, keyLink, keyFilter }
+    // const pkeEncryptedKey = simplecrypto.pkeEncrypt(analystPk, JSON.stringify(key))
 
     /**
      * Serialize the encrypted structures.
      */
-     const eds = { edxData, edxLink, emmFilter }
+    const eds = { edxData, edxLink, emmFilter }
+    console.log(eds.edxData)
 
-    axios.post(SERVER_ADDR + '/postSetup', {
-        "dataOwnerId": dataOwnerId.toString(),
-        "keys": key,
-        "eds": JSON.stringify(eds)
-    }).then((res) => {
-        // console.log("Sent EDS & Keys")
-    });
+    const postSetupResponse = await axios.post(
+        SERVER_ADDR + '/postSetup',
+        { data: serialize({ dataOwnerId, keys, eds }) }
+    )
 
     // TODO(zespirit): Missing PKE encryption here.
-
-    // TODO(zespirit): Retrieve previous HTs from server.
 
     /**
      * Initialize an ELS ("encrypted linking structure") object.
@@ -348,33 +251,87 @@ async function setup_dataowner() {
      * linking level do not result in collisions, as needed by the
      * functionality requirements for the ELS structure.
      */
-    // logSetup("Initializing the ELS...")
-    // const els = new ELS(columnNames, variables.NUM_LINK_LEVELS, linkingTags)
+    logSetup("Initializing the ELS...")
+    const elsContainer = {}
+    const myEls = new ELS(columnNames, variables.NUM_LINK_LEVELS, linkingTags)
+    elsContainer[dataOwnerId] = myEls
 
-    // /**
-    //  * Set up the AHE-encrypted values inside of the ELS object.
-    //  */
-    // for (const columnName of variables.NUMERICAL) {
-    //     logSetup("Initializing ELS data for column", columnName)
-    //     const columnIndex = getColumnIndex(columnName, columnNames)
-    //     for (let linkLevel = 0; linkLevel < variables.NUM_LINK_LEVELS; linkLevel++) {
-    //         const eht = els.getTable(columnName, linkLevel)
-    //         for (const [linkTag, recordId, record] of recordsWithIdsAndTags) {
-    //             const subTag = linkTag[linkLevel]
-    //             const columnValue = record[columnIndex]
-    //             const numValue = BigInt(parseInt(columnValue))
-    //             eht.add(subTag, analystPublicKey.encrypt(numValue))
-    //         }
-    //         /**
-    //          * Populate the remaining empty spaces with encryptions of 0.
-    //          */
-    //         logSetup("Populating remaining empty spaces...")
-    //         eht.populateEmptySpaces(() => analystPublicKey.encrypt(0n))
-    //     }
-    // }
-    // logSetup("Done with ELS setup.")
+    /**
+     * Set up the AHE-encrypted values inside of the ELS object.
+     */
+    for (const columnName of variables.NUMERICAL) {
+        logSetup("Initializing ELS data for column", columnName)
+        const columnIndex = getColumnIndex(columnName, columnNames)
+        for (let linkLevel = 0; linkLevel < variables.NUM_LINK_LEVELS; linkLevel++) {
+            const eht = myEls.getTable(columnName, linkLevel)
+            for (const [linkTag, recordId, record] of recordsWithIdsAndTags) {
+                const subTag = linkTag[linkLevel]
+                const columnValue = record[columnIndex]
+                const numValue = BigInt(parseInt(columnValue))
+                eht.add(subTag, analystPublicKey.encrypt(numValue))
+            }
+            /**
+             * Populate the remaining empty spaces with encryptions of 1.
+             */
+            logSetup("Populating remaining empty spaces...")
+            // eht.populateEmptySpaces(() => analystPublicKey.encrypt(1n))
+        }
+    }
+    logSetup("Done with ELS setup.")
 
-    // TODO(zespirit): Send the ELS instance to the server.
+    /**
+     * Perform multiplications with other ELS structures contributed
+     * by other parties.
+     */
+    logSetup("Retrieving previous ELS tables...")
+    const getPreviousTablesResponse = await axios.get(SERVER_ADDR + '/getPreviousTables')
+    const previousTables = deserialize(getPreviousTablesResponse.data.response)
+    logSetup(`Retrieved ${Object.keys(previousTables).length} previous tables.`)
+
+    for (const [otherDataOwnerId, otherEls] of Object.entries(previousTables)) {
+        logSetup(`Computing pairwise table with data owner ${otherDataOwnerId}...`)
+        const otherColumns = Array.from(otherEls.getColumns())
+        const columnPairs = cartesian(
+            otherColumns,
+            variables.NUMERICAL
+        ).map((arr) => { return arr.join("|") })
+
+        const newEls = new ELS(columnPairs, variables.NUM_LINK_LEVELS, linkingTags)
+
+        for (const otherColumn of otherColumns) {
+            for (let linkLevel = 0; linkLevel < variables.NUM_LINK_LEVELS; linkLevel++) {
+                const otherEht = otherEls.getTable(otherColumn, linkLevel)
+
+                for (const myColumn of variables.NUMERICAL) {
+                    const myColumnIndex = getColumnIndex(myColumn, columnNames)
+
+                    logSetup(`Populating table for ${myColumn} & ${otherColumn} at level ${linkLevel}...`)
+                    const newEht = newEls.getTable([otherColumn, myColumn].join("|"), linkLevel)
+
+                    for (const [myLinkTag, _, myRecord] of recordsWithIdsAndTags) {
+                        const mySubTag = myLinkTag[linkLevel]
+                        const myPlaintext = BigInt(parseInt(myRecord[myColumnIndex]))
+                        const otherCiphertext = otherEht.get(mySubTag) ?? analystPublicKey.encrypt(0n)
+                        newEht.add(mySubTag, analystPublicKey.multiply(otherCiphertext, myPlaintext))
+                    }
+
+                    /**
+                     * Populate the remaining empty spaces with encryptions of 0.
+                     */
+                    logSetup("Populating remaining empty spaces...")
+                    // newEht.populateEmptySpaces(() => analystPublicKey.encrypt(0n))
+                }
+            }
+        }
+        elsContainer[[otherDataOwnerId, dataOwnerId]] = newEls
+    }
+
+    logSetup("Sending new ELS tables to the server...")
+    const postNewTablesResponse = await axios.post(
+        SERVER_ADDR + '/postNewTables',
+        { data: serialize(elsContainer) }
+    )
+    logSetup("All done!")
 }
 
 function query_analyst() {
@@ -389,24 +346,33 @@ function query_analyst() {
 
                 let k = keys[dataOwner].keyFilter;
 
+                console.log("test")
                 var tk = PiBase.token(k, JSON.stringify({
                     "columnName": "LAST_NAME",
                     "columnValue": "Dietrich"
                 }));
+                console.log("test2")
 
 
                 tokens[dataOwner] = tk;
             }
 
 
+            console.log("tokens!")
+            console.log(tokens)
             axios.post(SERVER_ADDR + '/postQuery', {
-              "query": JSON.stringify(tokens)
+              "query": serialize(tokens)
             }).then((res) => {
+
+                console.log(res.data)
+
+                let deserialized = deserialize(res.data.response)
+                console.log(deserialized)
 
                 for (let dataOwner in keys) {
                     let k = keys[dataOwner].keyData
 
-                    let data = (res.data[dataOwner])
+                    let data = (deserialized[dataOwner])
                     let plaintext = PiBase.resolve(k, data)
                     console.log(plaintext)   
                 }

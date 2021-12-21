@@ -3,17 +3,30 @@ const app = express();
 const port = 8083;
 const path = require('path');
 
-const containers = require("containers");
 const jsgraphs = require('js-graph-algorithms');
+
+const { register, serialize, deserialize } = require('god-tier-serializer')
+
+const containers = require("containers");
+const Multimap = containers.Multimap;
 const PiBase = containers.PiBase;
+const EHT = containers.EHT;
+const ELS = containers.ELS;
+const StringableMap = containers.StringableMap;
+register(Multimap.prototype, 'Multimap')
+register(PiBase.prototype, 'PiBase')
+register(EHT.prototype, 'EHT')
+register(ELS.prototype, 'ELS')
+register(StringableMap.prototype, 'StringableMap')
 
 let analystPublicKeys = {};
 let encryptedDataKeys = {};
 let encryptedDataStructures = {};
 let unserializedEDS = {};
+let previousTables = {}
 
 app.use(express.static(__dirname + '/client'));
-app.use(express.urlencoded({extended: true}));
+app.use(express.urlencoded({limit: '50mb', extended: true}));
 app.use(express.json({limit: '50mb'})) // To parse the incoming requests with JSON payloads
 
 
@@ -58,62 +71,51 @@ app.get('/getKeys', async function(req, res) {
 
 });
 
+app.get('/getPreviousTables', async function(req, res) {
+  res.status(200).send({ response: serialize(previousTables) })
+})
+
+app.post('/postNewTables', async (req, res) => {
+  const newTables = deserialize(req.body.data)
+  Object.assign(previousTables, newTables)
+  console.log(previousTables)
+  res.status(200).send("Success:")
+})
+
 app.post('/postSetup', async function(req, res) {
-  let dataOwnerId = req.body.dataOwnerId;
-  encryptedDataKeys[dataOwnerId] = req.body.keys; 
-  encryptedDataStructures[dataOwnerId] = req.body.eds;
+  const parsed = deserialize(req.body.data)
 
-  // hash tables go in here too??
+  /**
+   * Save the encrypted structures.
+   */
+  const dataOwnerId = parsed.dataOwnerId;
+  encryptedDataKeys[dataOwnerId] = parsed.keys;
+  encryptedDataStructures[dataOwnerId] = parsed.eds;
 
-  console.log("Storing encrypted data keys ");
-  res.status(200).send("Success: storing keys for dataowner: " + dataOwnerId);
+  // TODO(zespirit): Encode the ELS structures.
+
+  res.status(200).send("Success: stored structures for dataowner: " + dataOwnerId);
 });
 
 app.post('/postQuery', async function(req, res) {
-  let tks = req.body.query;
-
-  const records = query(JSON.parse(tks));
-  console.log("Query success");
-  res.status(200).send(JSON.stringify(records));
+  const tks = deserialize(req.body.query);
+  const records = query(tks);
+  res.status(200).send({ response: serialize(records) });
 });
 
-function unserialize() {
-  for (dataOwner in encryptedDataStructures) {
-    let parsed = JSON.parse(encryptedDataStructures[dataOwner])
-    let edxData = PiBase.fromJSON(parsed.edxData);
-    let emmFilter = PiBase.fromJSON(parsed.emmFilter);
-    let edxLink = PiBase.fromJSON(parsed.edxLink);
-    
-    unserializedEDS[dataOwner] = {
-      edxData, emmFilter, edxLink
-    }
-  }
-}
-
 function query(tks) {
-
-  // if unserialized empty
-  unserialize()
-
   var records = filter(tks);
-
   return records;
-
 }
 
 function filter(tks) {
   var records = {}
-  for (dataOwner in unserializedEDS) {
+  for (dataOwner in encryptedDataStructures) {
     try {
-      console.log(tks[dataOwner]);
-
-      let result = unserializedEDS[dataOwner].emmFilter.query(tks[dataOwner]);
-      
+      let result = encryptedDataStructures[dataOwner].emmFilter.query(tks[dataOwner]);
+      console.log("result:", result)
       result.forEach(function(value) {
-        console.log("value", value.tkData)
-
-        var edxRes = unserializedEDS[dataOwner].edxData.query(value.tkData);
-  
+        var edxRes = encryptedDataStructures[dataOwner].edxData.query(value.tkData);
         edxRes.forEach(function(value) {
           if (dataOwner in records) {
             records[dataOwner].push(value)
@@ -122,17 +124,12 @@ function filter(tks) {
           }
         });
       })
-
-
     } catch (e) {
       console.log('error', e)
       continue
     }
-  
   }
-
   return records;
-
 }
 
 function link() {
