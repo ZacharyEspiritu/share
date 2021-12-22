@@ -98,16 +98,34 @@ app.post('/postSetup', async function(req, res) {
 });
 
 app.post('/postQuery', async function(req, res) {
-  const tks = deserialize(req.body.query);
-  const records = query(tks);
+  const filterTokens = deserialize(req.body.filterList);
+  const aggregateToken = deserialize(req.body.aggregate);
+  const records = query(filterTokens, aggregateToken);
   res.status(200).send({ response: serialize(records) });
 });
 
-function query(tks) {
-  [records, filterResults] = filter(tks);
+function query(filterTokens, aggregateToken) {
+  [records, filterResults] = filter(filterTokens);
 
   link(filterResults);
 
+  switch (aggregateToken.operation) {
+    case "SUM":
+      const { dataOwnerId, columnName } = aggregateToken.fields.column
+      const els = previousTables[dataOwnerId]
+      const linkLevel = 1
+      const eht = els.getTable(columnName, linkLevel)
+      const linkTag = "stub"
+      const ct = eht.get(linkTag)
+      return { sum: ct }
+      break
+    case "COUNT":
+      break
+    case "AVERAGE":
+      break
+    case "REGRESSION":
+      break
+  }
   return records;
 }
 
@@ -148,6 +166,6 @@ function link(filterResults) {
 
   // var g = new jsgraphs.Graph(6);
   // for (dataOwner in encryptedDataStructures) {
-   
+
   // }
 }

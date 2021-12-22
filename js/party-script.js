@@ -439,13 +439,24 @@ async function query_analyst() {
         tokens[dataOwner] = tk;
     }
 
+    const aggregateToken = {
+        operation: "SUM", // "COUNT", "AVERAGE", "REGRESSION"
+        fields: {
+            column: {
+                dataOwnerId: 0,
+                columnName: "HEIGHT",
+            },
+        },
+    }
+
     /**
      * Send the filter token list to the server.
      */
     const postQueryRes = await axios.post(
         SERVER_ADDR + '/postQuery',
         {
-            "query": serialize(tokens)
+            filterList: serialize(tokens),
+            aggregate: serialize(aggregateToken),
         }
     )
 
@@ -454,12 +465,13 @@ async function query_analyst() {
      * to determine the final plaintext response.
      */
     const deserialized = deserialize(postQueryRes.data.response)
-    for (let dataOwner in keys) {
-        let k = keys[dataOwner].keyData
-        let data = (deserialized[dataOwner])
-        let plaintext = PiBase.resolve(k, data)
-        console.log(plaintext)
-    }
+    // for (let dataOwner in keys) {
+    //     let k = keys[dataOwner].keyData
+    //     let data = (deserialized[dataOwner])
+    //     let plaintext = PiBase.resolve(k, data)
+    //     console.log(plaintext)
+    // }
+    deserialized.sum
 }
 
 if (party == DATAOWNER) {
