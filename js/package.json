@@ -20,7 +20,8 @@
     "js-graph-algorithms": "^1.0.18",
     "paillier-bigint": "^3.2.5",
     "path": "^0.12.7",
-    "simplecrypto": "file:simplecrypto"
+    "simplecrypto": "file:simplecrypto",
+    "node-seal": "^4.6.2"
   },
   "devDependencies": {
     "debug": "^4.3.3"

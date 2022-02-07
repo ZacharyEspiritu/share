@@ -22,6 +22,8 @@ register(EHT.prototype, 'EHT')
 register(ELS.prototype, 'ELS')
 register(StringableMap.prototype, 'StringableMap')
 
+const SEAL = require("node-seal");
+
 const debug = require("debug");
 const logSetup = debug('dataowner-setup');
 
@@ -359,7 +361,7 @@ async function setup_dataowner() {
              * Populate the remaining empty spaces with encryptions of 1.
              */
             logSetup("Populating remaining empty spaces...")
-            // eht.populateEmptySpaces(() => analystPublicKey.encrypt(1n))
+            eht.populateEmptySpaces(() => analystPublicKey.encrypt(1n))
         }
     }
     logSetup("Done with ELS setup.")
